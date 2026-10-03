@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earth911 — Detect. Predict. Protect.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0e1913;
+    --surface:#16241c;
+    --surface-raised:#1c2e23;
+    --line:#2a3d30;
+    --moss:#7fae6e;
+    --moss-dim:#4f7345;
+    --clay:#d08a4c;
+    --sky:#5aa3b6;
+    --warn:#c1553c;
+    --text-hi:#f1f3ec;
+    --text-lo:#a9b7a5;
+    --radius-sm:6px;
+    --radius-md:10px;
+    --serif: 'Fraunces', serif;
+    --sans: 'Noto Sans', 'Noto Sans Arabic', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans Devanagari', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text-hi);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.rtl{direction:rtl;}
+  a{color:inherit;}
+  img,svg{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0;letter-spacing:-0.01em;}
+  p{margin:0;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+  :focus-visible{outline:2px solid var(--moss);outline-offset:3px;}
+
+  /* ---------- topbar ---------- */
+  header.top{
+    position:sticky;top:0;z-index:40;
+    background:rgba(14,25,19,0.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;max-width:1180px;margin:0 auto;gap:16px;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:20px;font-weight:700;white-space:nowrap;}
+  .brand .mark{width:30px;height:30px;flex:none;}
+  nav.primary{display:flex;gap:26px;flex-wrap:wrap;}
+  nav.primary a{font-size:14.5px;color:var(--text-lo);text-decoration:none;padding:6px 0;border-bottom:2px solid transparent;transition:color .15s;}
+  nav.primary a:hover{color:var(--text-hi);}
+  .top-actions{display:flex;align-items:center;gap:12px;}
+  select#langSwitch{
+    background:var(--surface-raised);color:var(--text-hi);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;font-family:inherit;
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;
+    border-radius:var(--radius-sm);padding:10px 18px;font-size:14px;font-weight:600;
+    text-decoration:none;transition:transform .12s, background .15s, border-color .15s;
+  }
+  .btn-primary{background:var(--moss);color:#0e1913;}
+  .btn-primary:hover{background:#8fbd7f;}
+  .btn-line{border-color:var(--line);color:var(--text-hi);background:transparent;}
+  .btn-line:hover{border-color:var(--moss);}
+  .btn:active{transform:scale(.97);}
+  .navToggle{display:none;background:none;border:1px solid var(--line);border-radius:var(--radius-sm);color:var(--text-hi);padding:8px 10px;}
+
+  /* ---------- hero ---------- */
+  .hero{padding:76px 0 64px;border-bottom:1px solid var(--line);}
+  .hero-grid{display:grid;grid-template-columns:1.15fr 0.85fr;gap:56px;align-items:center;}
+  .eyebrow-tag{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--moss);background:rgba(127,174,110,.1);border:1px solid rgba(127,174,110,.35);padding:6px 12px;border-radius:99px;margin-bottom:22px;}
+  .eyebrow-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--moss);}
+  .hero h1{font-size:52px;line-height:1.06;max-width:15ch;}
+  .hero p.lede{margin-top:20px;font-size:18px;color:var(--text-lo);max-width:46ch;}
+  .search-panel{margin-top:32px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:8px;display:flex;gap:8px;max-width:520px;}
+  .search-panel input{flex:1;background:transparent;border:0;color:var(--text-hi);padding:12px 14px;font-size:15px;font-family:inherit;}
+  .search-panel input:focus{outline:none;}
+  .search-panel button{background:var(--clay);color:#1a0e04;border:0;border-radius:var(--radius-sm);padding:0 20px;font-weight:700;font-size:14px;}
+  .hero-actions{display:flex;gap:14px;margin-top:22px;}
+
+  /* radar / signal panel */
+  .signal{position:relative;aspect-ratio:1/1;max-width:400px;margin-inline:auto;}
+  .signal svg{width:100%;height:100%;}
+  .signal-ring{fill:none;stroke:var(--line);}
+  .signal-node{fill:var(--moss);}
+  .signal-label{font-size:11px;fill:var(--text-lo);font-family:var(--sans);}
+  .signal-center{fill:var(--surface-raised);stroke:var(--moss);stroke-width:1.4;}
+  .signal-caption{text-align:center;margin-top:14px;font-size:13px;color:var(--text-lo);}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .sweep{transform-origin:200px 200px;animation:spin 6s linear infinite;}
+  @media (prefers-reduced-motion: reduce){.sweep{animation:none;}}
+
+  /* ---------- section shell ---------- */
+  section{padding:74px 0;border-bottom:1px solid var(--line);}
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:38px;flex-wrap:wrap;}
+  .section-head h2{font-size:32px;}
+  .section-head p{color:var(--text-lo);max-width:44ch;margin-top:8px;}
+  .kicker{color:var(--clay);font-size:14px;font-weight:600;margin-bottom:10px;display:block;}
+
+  /* pillars (asymmetric, not identical cards) */
+  .pillars{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .pillar{background:var(--surface);padding:32px 28px;}
+  .pillar:first-child{background:var(--surface-raised);}
+  .pillar h3{font-size:22px;margin-bottom:12px;}
+  .pillar p{color:var(--text-lo);font-size:14.5px;}
+  .pillar .num{font-family:var(--serif);font-size:15px;color:var(--moss);margin-bottom:16px;display:block;}
+
+  /* recycling result */
+  .result-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:26px;max-width:640px;display:none;}
+  .result-card.show{display:block;}
+  .result-card .tag{display:inline-block;font-size:12.5px;color:var(--sky);background:rgba(90,163,182,.12);border:1px solid rgba(90,163,182,.35);padding:4px 10px;border-radius:99px;margin-bottom:14px;}
+  .result-card h3{font-size:22px;margin-bottom:6px;}
+  .result-card .cat{color:var(--text-lo);font-size:14px;margin-bottom:18px;}
+  .centers{display:grid;gap:10px;margin-top:16px;}
+  .center-row{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 16px;background:var(--surface-raised);}
+  .center-row .name{font-weight:600;font-size:14.5px;}
+  .center-row .dist{font-size:13px;color:var(--text-lo);}
+
+  /* alerts */
+  .alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+  .alert-card{border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;background:var(--surface);border-inline-start:3px solid var(--sky);}
+  .alert-card.warn{border-inline-start-color:var(--warn);}
+  .alert-card.clay{border-inline-start-color:var(--clay);}
+  .alert-card .level{font-size:12px;text-transform:none;color:var(--text-lo);margin-bottom:6px;}
+  .alert-card h4{font-family:var(--serif);font-size:18px;margin-bottom:8px;}
+  .alert-card p{font-size:13.5px;color:var(--text-lo);}
+
+  /* news */
+  .news-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;}
+  .news-feature{border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;background:var(--surface);}
+  .news-feature .imgblock{height:220px;background:linear-gradient(135deg,var(--moss-dim),var(--surface-raised));position:relative;}
+  .news-feature .imgblock span{position:absolute;bottom:14px;inset-inline-start:16px;font-size:12.5px;color:var(--text-lo);}
+  .news-feature .body{padding:24px;}
+  .news-feature h3{font-size:23px;margin-bottom:10px;}
+  .news-feature p{color:var(--text-lo);font-size:14.5px;}
+  .news-list{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .news-item{background:var(--surface);padding:18px 20px;}
+  .news-item .src{font-size:12px;color:var(--sky);margin-bottom:6px;}
+  .news-item h4{font-family:var(--serif);font-size:15.5px;margin-bottom:4px;}
+  .news-item p{font-size:13px;color:var(--text-lo);}
+  .news-note{margin-top:14px;font-size:12.5px;color:var(--text-lo);}
+
+  /* learn */
+  .learn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;}
+  .learn-card{border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;background:var(--surface);transition:border-color .15s;}
+  .learn-card:hover{border-color:var(--moss);}
+  .learn-card .ic{font-size:22px;margin-bottom:14px;}
+  .learn-card h4{font-size:16px;margin-bottom:6px;}
+  .learn-card p{font-size:13px;color:var(--text-lo);}
+
+  /* assistant */
+  .assistant{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start;}
+  .chatbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;height:100%;}
+  .chat-log{display:flex;flex-direction:column;gap:12px;min-height:220px;margin-bottom:14px;}
+  .bubble{max-width:80%;padding:11px 14px;border-radius:12px;font-size:14px;}
+  .bubble.user{align-self:flex-end;background:var(--moss);color:#0e1913;}
+  body.rtl .bubble.user{align-self:flex-start;}
+  .bubble.ai{align-self:flex-start;background:var(--surface-raised);border:1px solid var(--line);}
+  body.rtl .bubble.ai{align-self:flex-end;}
+  .chat-input{display:flex;gap:8px;}
+  .chat-input input{flex:1;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text-hi);font-family:inherit;font-size:14px;}
+  .chat-input button{background:var(--clay);border:0;border-radius:var(--radius-sm);padding:0 18px;color:#1a0e04;font-weight:700;}
+
+  /* map / locations */
+  .loc-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .map-fake{background:radial-gradient(circle at 30% 30%, rgba(127,174,110,.18), transparent 60%), radial-gradient(circle at 70% 60%, rgba(90,163,182,.15), transparent 55%), var(--surface);min-height:340px;position:relative;}
+  .map-pin{position:absolute;width:14px;height:14px;border-radius:50% 50% 50% 0;background:var(--clay);transform:rotate(-45deg);box-shadow:0 0 0 4px rgba(208,138,76,.18);}
+  .loc-list{background:var(--surface-raised);padding:8px;display:flex;flex-direction:column;gap:1px;max-height:340px;overflow:auto;}
+  .loc-list .item{padding:14px 16px;border-radius:var(--radius-sm);}
+  .loc-list .item:hover{background:var(--surface);}
+  .loc-list .item .name{font-weight:600;font-size:14.5px;}
+  .loc-list .item .meta{font-size:12.5px;color:var(--text-lo);margin-top:3px;}
+
+  /* register CTA band */
+  .register-band{background:var(--surface-raised);}
+  .register-inner{display:flex;justify-content:space-between;align-items:center;gap:30px;flex-wrap:wrap;}
+  .register-inner h2{font-size:28px;max-width:20ch;}
+  .register-inner p{color:var(--text-lo);margin-top:10px;max-width:42ch;}
+
+  /* footer */
+  footer{padding:44px 0;}
+  .foot-grid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--text-lo);font-size:13.5px;}
+  .foot-brand{font-family:var(--serif);color:var(--text-hi);font-size:17px;margin-bottom:8px;}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(8,14,10,.72);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);width:100%;max-width:440px;padding:30px;position:relative;}
+  .modal h3{font-size:23px;margin-bottom:6px;}
+  .modal p.sub{color:var(--text-lo);font-size:14px;margin-bottom:22px;}
+  .modal .close{position:absolute;top:16px;inset-inline-end:16px;background:none;border:0;color:var(--text-lo);font-size:20px;line-height:1;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:var(--text-lo);margin-bottom:6px;}
+  .field input{width:100%;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;color:var(--text-hi);font-family:inherit;font-size:14px;}
+  .loc-row{display:flex;align-items:center;gap:10px;background:var(--surface-raised);border:1px dashed var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:13.5px;color:var(--text-lo);}
+  .loc-row button{flex:none;background:transparent;border:1px solid var(--line);color:var(--text-hi);border-radius:var(--radius-sm);padding:7px 12px;font-size:12.5px;}
+  .loc-row.got{border-style:solid;border-color:var(--moss);color:var(--text-hi);}
+  .modal .btn-primary{width:100%;justify-content:center;padding:12px;margin-top:4px;}
+  .toast{position:fixed;bottom:24px;inset-inline-start:50%;transform:translateX(-50%);background:var(--moss);color:#0e1913;padding:12px 20px;border-radius:99px;font-size:14px;font-weight:600;display:none;z-index:110;}
+  body.rtl .toast{transform:translateX(50%);}
+  .toast.show{display:block;}
+
+  @media (max-width:880px){
+    nav.primary{position:fixed;inset-inline-start:0;top:64px;bottom:0;background:var(--ink);flex-direction:column;padding:24px 28px;width:78%;max-width:300px;transform:translateX(-105%);transition:transform .2s;border-inline-end:1px solid var(--line);}
+    body.rtl nav.primary{transform:translateX(105%);}
+    nav.primary.open{transform:translateX(0);}
+    .navToggle{display:block;}
+    .hero-grid, .assistant, .news-grid, .loc-wrap, .pillars{grid-template-columns:1fr;}
+    .pillar:first-child{background:var(--surface);}
+    .hero h1{font-size:38px;}
+    .register-inner{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#7fae6e" stroke-width="2"/><path d="M16 4c3 4 3 20 0 24M4 16c4-3 20-3 24 0" stroke="#7fae6e" stroke-width="1.4" opacity=".6"/><circle cx="16" cy="16" r="4" fill="#d08a4c"/></svg>
+      <span>Earth911</span>
+    </div>
+    <button class="navToggle" id="navToggle" aria-label="Menu">☰</button>
+    <nav class="primary" id="primaryNav">
+      <a href="#recycle" data-i18n="nav.recycling">Recycling</a>
+      <a href="#locations" data-i18n="nav.locations">Locations</a>
+      <a href="#alerts" data-i18n="nav.alerts">Alerts</a>
+      <a href="#news" data-i18n="nav.news">News</a>
+      <a href="#learn" data-i18n="nav.learn">Learn</a>
+      <a href="#assistant" data-i18n="nav.ai">AI Assistant</a>
+    </nav>
+    <div class="top-actions">
+      <select id="langSwitch" aria-label="Language"></select>
+      <button class="btn btn-primary" id="openRegisterTop" data-i18n="nav.join">Join free</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow-tag"><span class="dot"></span><span data-i18n="hero.eyebrow">Live environmental intelligence</span></span>
+      <h1 data-i18n="hero.title">Make every item, and every alert, count.</h1>
+      <p class="lede" data-i18n="hero.lede">Find where to recycle almost anything, track environmental risk near you, and get plain-language guidance on what to do next.</p>
+      <div class="search-panel">
+        <input id="recycleInput" type="text" data-i18n-placeholder="hero.searchPlaceholder" placeholder="What do you want to recycle?">
+        <button id="recycleBtn" data-i18n="hero.searchBtn">Search</button>
+      </div>
+      <div class="hero-actions">
+        <a href="#locations" class="btn btn-line" data-i18n="hero.secondary">See the map</a>
+      </div>
+    </div>
+    <div>
+      <div class="signal">
+        <svg viewBox="0 0 400 400">
+          <circle class="signal-ring" cx="200" cy="200" r="170"/>
+          <circle class="signal-ring" cx="200" cy="200" r="120"/>
+          <circle class="signal-ring" cx="200" cy="200" r="70"/>
+          <g class="sweep"><path d="M200 200 L200 30" stroke="#7fae6e" stroke-width="1.5" opacity="0.7"/><path d="M200 200 L200 30 A170 170 0 0 1 260 45 Z" fill="#7fae6e" opacity="0.08"/></g>
+          <circle class="signal-node" cx="290" cy="140" r="6"/>
+          <circle class="signal-node" cx="120" cy="260" r="5"/>
+          <circle class="signal-node" cx="270" cy="290" r="4"/>
+          <circle class="signal-node" cx="110" cy="120" r="4" fill="#d08a4c"/>
+          <circle class="signal-center" cx="200" cy="200" r="46"/>
+          <text x="200" y="197" text-anchor="middle" class="signal-label" font-size="12" fill="#f1f3ec" font-weight="600">EARTH911</text>
+          <text x="200" y="213" text-anchor="middle" class="signal-label" font-size="9">SCANNING</text>
+        </svg>
+      </div>
+      <p class="signal-caption" data-i18n="hero.signalCaption">A live read on recycling access and environmental risk, distilled into one signal.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pillars-section">
+  <div class="wrap">
+    <div class="pillars">
+      <div class="pillar">
+        <span class="num">01</span>
+        <h3 data-i18n="pillar1.title">Detect</h3>
+        <p data-i18n="pillar1.body">We map recycling centers, drop-off points, and environmental sensors across your area so nothing useful stays hidden.</p>
+      </div>
+      <div class="pillar">
+        <span class="num">02</span>
+        <h3 data-i18n="pillar2.title">Predict</h3>
+        <p data-i18n="pillar2.body">Air quality, flooding, and wildfire signals are tracked so you can see risk building before it reaches you.</p>
+      </div>
+      <div class="pillar">
+        <span class="num">03</span>
+        <h3 data-i18n="pillar3.title">Protect</h3>
+        <p data-i18n="pillar3.body">Every result ends in an action: where to take an item, what to check, or how to stay safe today.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="recycle">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="recycle.kicker">Can I recycle this?</span>
+        <h2 data-i18n="recycle.title">Ask about any item</h2>
+        <p data-i18n="recycle.sub">Type an item above — batteries, an old phone, glass, clothing — and get a category, a recommendation, and nearby centers.</p>
+      </div>
+    </div>
+    <div class="result-card" id="resultCard">
+      <span class="tag" id="resultTag">Electronic Waste</span>
+      <h3 id="resultTitle">Old Laptop</h3>
+      <p class="cat" id="resultCat" data-i18n="recycle.category">Category: Electronic Equipment</p>
+      <p id="resultRec" data-i18n="recycle.recommendation">Take it to an electronics recycling facility — most also accept chargers and small accessories.</p>
+      <div class="centers">
+        <div class="center-row"><span class="name" data-i18n="recycle.centerA">Downtown E-Waste Center</span><span class="dist">2.1 km</span></div>
+        <div class="center-row"><span class="name" data-i18n="recycle.centerB">Greenline Recycling Hub</span><span class="dist">4.3 km</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="locations">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="loc.kicker">Nearby</span>
+        <h2 data-i18n="loc.title">Recycling locations</h2>
+        <p data-i18n="loc.sub">Browse centers near you by material — electronics, glass, metal, textiles, and more.</p>
+      </div>
+    </div>
+    <div class="loc-wrap">
+      <div class="map-fake">
+        <div class="map-pin" style="top:32%;left:38%;"></div>
+        <div class="map-pin" style="top:55%;left:60%;"></div>
+        <div class="map-pin" style="top:68%;left:30%;"></div>
+        <div class="map-pin" style="top:22%;left:70%;"></div>
+      </div>
+      <div class="loc-list">
+        <div class="item"><div class="name" data-i18n="loc.item1">Downtown E-Waste Center</div><div class="meta" data-i18n="loc.item1meta">Electronics · 2.1 km</div></div>
+        <div class="item"><div class="name" data-i18n="loc.item2">Greenline Recycling Hub</div><div class="meta" data-i18n="loc.item2meta">Computers & Electronics · 4.3 km</div></div>
+        <div class="item"><div class="name" data-i18n="loc.item3">Riverside Glass & Metal Depot</div><div class="meta" data-i18n="loc.item3meta">Glass, Metal · 3.6 km</div></div>
+        <div class="item"><div class="name" data-i18n="loc.item4">Community Textile Bank</div><div class="meta" data-i18n="loc.item4meta">Clothing, Fabric · 1.4 km</div></div>
+        <div class="item"><div class="name" data-i18n="loc.item5">City Battery Collection Point</div><div class="meta" data-i18n="loc.item5meta">Batteries · 5.0 km</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="alerts">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="alerts.kicker">Environmental alert center</span>
+        <h2 data-i18n="alerts.title">Know the risk around you</h2>
+        <p data-i18n="alerts.sub">Demo alerts for this preview — a live version connects to weather and environmental data services.</p>
+      </div>
+    </div>
+    <div class="alert-grid">
+      <div class="alert-card">
+        <div class="level" data-i18n="alerts.a1level">Moderate risk</div>
+        <h4 data-i18n="alerts.a1title">Air quality watch</h4>
+        <p data-i18n="alerts.a1body">Conditions may be unhealthy for sensitive groups. Limit prolonged outdoor exertion.</p>
+      </div>
+      <div class="alert-card warn">
+        <div class="level" data-i18n="alerts.a2level">High risk</div>
+        <h4 data-i18n="alerts.a2title">Flood watch</h4>
+        <p data-i18n="alerts.a2body">Heavy rainfall expected. Low-lying areas near rivers should prepare for possible flooding.</p>
+      </div>
+      <div class="alert-card clay">
+        <div class="level" data-i18n="alerts.a3level">Low risk</div>
+        <h4 data-i18n="alerts.a3title">Wildfire outlook</h4>
+        <p data-i18n="alerts.a3body">Dry conditions persist regionally. No active fires reported near populated areas.</p>
+      </div>
+      <div class="alert-card">
+        <div class="level" data-i18n="alerts.a4level">Moderate risk</div>
+        <h4 data-i18n="alerts.a4title">Severe weather</h4>
+        <p data-i18n="alerts.a4body">Strong winds possible this evening. Secure loose outdoor items before nightfall.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="news">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="news.kicker">World environmental news</span>
+        <h2 data-i18n="news.title">What's happening on the planet</h2>
+        <p data-i18n="news.sub">Curated coverage of climate, conservation, and recycling stories from around the world.</p>
+      </div>
+    </div>
+    <div class="news-grid">
+      <div class="news-feature">
+        <div class="imgblock"><span data-i18n="news.featureTag">Featured · Climate</span></div>
+        <div class="body">
+          <h3 data-i18n="news.featureTitle">Coastal cities expand flood defenses as sea levels shift</h3>
+          <p data-i18n="news.featureBody">Engineers and city planners across several coastal regions are accelerating barrier and drainage projects, aiming to protect low-lying neighborhoods over the next decade.</p>
+        </div>
+      </div>
+      <div class="news-list">
+        <div class="news-item">
+          <div class="src" data-i18n="news.i1src">Conservation</div>
+          <h4 data-i18n="news.i1title">Reforestation efforts pass one million trees this year</h4>
+          <p data-i18n="news.i1body">Volunteer-led planting programs report record participation across three continents.</p>
+        </div>
+        <div class="news-item">
+          <div class="src" data-i18n="news.i2src">Recycling</div>
+          <h4 data-i18n="news.i2title">New battery recycling standard adopted by major manufacturers</h4>
+          <p data-i18n="news.i2body">The agreement aims to recover more lithium and cobalt from consumer electronics.</p>
+        </div>
+        <div class="news-item">
+          <div class="src" data-i18n="news.i3src">Air Quality</div>
+          <h4 data-i18n="news.i3title">Several major cities report cleanest air in a decade</h4>
+          <p data-i18n="news.i3body">Officials credit stricter emissions rules and expanded public transit networks.</p>
+        </div>
+        <div class="news-item">
+          <div class="src" data-i18n="news.i4src">Oceans</div>
+          <h4 data-i18n="news.i4title">Marine protected areas grow to cover new fishing zones</h4>
+          <p data-i18n="news.i4body">Fisheries and conservation groups reach agreement on seasonal protections.</p>
+        </div>
+      </div>
+    </div>
+    <p class="news-note" data-i18n="news.note">Preview content for this demo. A connected version pulls live headlines from environmental news sources.</p>
+  </div>
+</section>
+
+<section id="learn">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="learn.kicker">Sustainability hub</span>
+        <h2 data-i18n="learn.title">Learn the basics</h2>
+      </div>
+    </div>
+    <div class="learn-grid">
+      <div class="learn-card"><div class="ic">♻️</div><h4 data-i18n="learn.c1">Recycling basics</h4><p data-i18n="learn.c1body">What actually gets recycled, and what doesn't.</p></div>
+      <div class="learn-card"><div class="ic">🌱</div><h4 data-i18n="learn.c2">Sustainable living</h4><p data-i18n="learn.c2body">Small habits that add up over a year.</p></div>
+      <div class="learn-card"><div class="ic">💧</div><h4 data-i18n="learn.c3">Water conservation</h4><p data-i18n="learn.c3body">Where household water actually goes.</p></div>
+      <div class="learn-card"><div class="ic">⚡</div><h4 data-i18n="learn.c4">Energy efficiency</h4><p data-i18n="learn.c4body">Cutting waste before adding solar.</p></div>
+      <div class="learn-card"><div class="ic">🌍</div><h4 data-i18n="learn.c5">Climate & environment</h4><p data-i18n="learn.c5body">The concepts behind the headlines.</p></div>
+      <div class="learn-card"><div class="ic">🗑️</div><h4 data-i18n="learn.c6">Waste reduction</h4><p data-i18n="learn.c6body">Reduce and reuse, before recycle.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="assistant">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="assist.kicker">Earth911 AI Assistant</span>
+        <h2 data-i18n="assist.title">Describe what you have</h2>
+        <p data-i18n="assist.sub">Tell it what you're trying to get rid of or worried about, and it walks you to an action.</p>
+      </div>
+    </div>
+    <div class="assistant">
+      <div class="chatbox">
+        <div class="chat-log" id="chatLog">
+          <div class="bubble ai" data-i18n="assist.seed">Hi — tell me what you have, like "an old laptop and some batteries," and I'll point you to what to do with each.</div>
+        </div>
+        <div class="chat-input">
+          <input id="chatInput" type="text" data-i18n-placeholder="assist.placeholder" placeholder="I have an old laptop and some batteries...">
+          <button id="chatSend" data-i18n="assist.send">Send</button>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:19px;margin-bottom:14px;" data-i18n="assist.doTitle">What it does</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;color:var(--text-lo);font-size:14.5px;">
+          <p data-i18n="assist.do1">— Identifies each item you mention</p>
+          <p data-i18n="assist.do2">— Sorts them into the right recycling category</p>
+          <p data-i18n="assist.do3">— Suggests nearby drop-off points</p>
+          <p data-i18n="assist.do4">— Flags anything that needs special handling</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="register-band">
+  <div class="wrap register-inner">
+    <div>
+      <h2 data-i18n="register.title">Create your free account</h2>
+      <p data-i18n="register.sub">Save your location once to get recycling results and alerts tuned to where you actually live.</p>
+    </div>
+    <button class="btn btn-primary" id="openRegisterBand" data-i18n="register.cta">Get started</button>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <div class="foot-brand">Earth911</div>
+      <p data-i18n="footer.tag">Detect. Predict. Protect.</p>
+    </div>
+    <div data-i18n="footer.note">Demo build — recycling data, alerts, and news shown here are illustrative.</div>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="close" id="closeModal" aria-label="Close">×</button>
+    <h3 data-i18n="modal.title">Join Earth911</h3>
+    <p class="sub" data-i18n="modal.sub">Free account — takes under a minute.</p>
+    <div class="field">
+      <label data-i18n="modal.name">Full name</label>
+      <input id="regName" type="text">
+    </div>
+    <div class="field">
+      <label data-i18n="modal.email">Email</label>
+      <input id="regEmail" type="email">
+    </div>
+    <div class="field">
+      <label data-i18n="modal.password">Password</label>
+      <input id="regPassword" type="password">
+    </div>
+    <div class="loc-row" id="locRow">
+      <span id="locText" data-i18n="modal.locPrompt" style="flex:1;">Share your location so we can find recycling centers near you.</span>
+      <button id="locBtn" data-i18n="modal.locBtn">Use my location</button>
+    </div>
+    <button class="btn btn-primary" id="submitReg" data-i18n="modal.submit">Create account</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- i18n ---------------- */
+const translations = {
+  en: { dir:"ltr", name:"English",
+    "nav.recycling":"Recycling","nav.locations":"Locations","nav.alerts":"Alerts","nav.news":"News","nav.learn":"Learn","nav.ai":"AI Assistant","nav.join":"Join free",
+    "hero.eyebrow":"Live environmental intelligence","hero.title":"Make every item, and every alert, count.","hero.lede":"Find where to recycle almost anything, track environmental risk near you, and get plain-language guidance on what to do next.","hero.searchPlaceholder":"What do you want to recycle?","hero.searchBtn":"Search","hero.secondary":"See the map","hero.signalCaption":"A live read on recycling access and environmental risk, distilled into one signal.",
+    "pillar1.title":"Detect","pillar1.body":"We map recycling centers, drop-off points, and environmental sensors across your area so nothing useful stays hidden.","pillar2.title":"Predict","pillar2.body":"Air quality, flooding, and wildfire signals are tracked so you can see risk building before it reaches you.","pillar3.title":"Protect","pillar3.body":"Every result ends in an action: where to take an item, what to check, or how to stay safe today.",
+    "recycle.kicker":"Can I recycle this?","recycle.title":"Ask about any item","recycle.sub":"Type an item above — batteries, an old phone, glass, clothing — and get a category, a recommendation, and nearby centers.","recycle.category":"Category: Electronic Equipment","recycle.recommendation":"Take it to an electronics recycling facility — most also accept chargers and small accessories.","recycle.centerA":"Downtown E-Waste Center","recycle.centerB":"Greenline Recycling Hub",
+    "loc.kicker":"Nearby","loc.title":"Recycling locations","loc.sub":"Browse centers near you by material — electronics, glass, metal, textiles, and more.","loc.item1":"Downtown E-Waste Center","loc.item1meta":"Electronics · 2.1 km","loc.item2":"Greenline Recycling Hub","loc.item2meta":"Computers & Electronics · 4.3 km","loc.item3":"Riverside Glass & Metal Depot","loc.item3meta":"Glass, Metal · 3.6 km","loc.item4":"Community Textile Bank","loc.item4meta":"Clothing, Fabric · 1.4 km","loc.item5":"City Battery Collection Point","loc.item5meta":"Batteries · 5.0 km",
+    "alerts.kicker":"Environmental alert center","alerts.title":"Know the risk around you","alerts.sub":"Demo alerts for this preview — a live version connects to weather and environmental data services.","alerts.a1level":"Moderate risk","alerts.a1title":"Air quality watch","alerts.a1body":"Conditions may be unhealthy for sensitive groups. Limit prolonged outdoor exertion.","alerts.a2level":"High risk","alerts.a2title":"Flood watch","alerts.a2body":"Heavy rainfall expected. Low-lying areas near rivers should prepare for possible flooding.","alerts.a3level":"Low risk","alerts.a3title":"Wildfire outlook","alerts.a3body":"Dry conditions persist regionally. No active fires reported near populated areas.","alerts.a4level":"Moderate risk","alerts.a4title":"Severe weather","alerts.a4body":"Strong winds possible this evening. Secure loose outdoor items before nightfall.",
+    "news.kicker":"World environmental news","news.title":"What's happening on the planet","news.sub":"Curated coverage of climate, conservation, and recycling stories from around the world.","news.featureTag":"Featured · Climate","news.featureTitle":"Coastal cities expand flood defenses as sea levels shift","news.featureBody":"Engineers and city planners across several coastal regions are accelerating barrier and drainage projects, aiming to protect low-lying neighborhoods over the next decade.","news.i1src":"Conservation","news.i1title":"Reforestation efforts pass one million trees this year","news.i1body":"Volunteer-led planting programs report record participation across three continents.","news.i2src":"Recycling","news.i2title":"New battery recycling standard adopted by major manufacturers","news.i2body":"The agreement aims to recover more lithium and cobalt from consumer electronics.","news.i3src":"Air Quality","news.i3title":"Several major cities report cleanest air in a decade","news.i3body":"Officials credit stricter emissions rules and expanded public transit networks.","news.i4src":"Oceans","news.i4title":"Marine protected areas grow to cover new fishing zones","news.i4body":"Fisheries and conservation groups reach agreement on seasonal protections.","news.note":"Preview content for this demo. A connected version pulls live headlines from environmental news sources.",
+    "learn.kicker":"Sustainability hub","learn.title":"Learn the basics","learn.c1":"Recycling basics","learn.c1body":"What actually gets recycled, and what doesn't.","learn.c2":"Sustainable living","learn.c2body":"Small habits that add up over a year.","learn.c3":"Water conservation","learn.c3body":"Where household water actually goes.","learn.c4":"Energy efficiency","learn.c4body":"Cutting waste before adding solar.","learn.c5":"Climate & environment","learn.c5body":"The concepts behind the headlines.","learn.c6":"Waste reduction","learn.c6body":"Reduce and reuse, before recycle.",
+    "assist.kicker":"Earth911 AI Assistant","assist.title":"Describe what you have","assist.sub":"Tell it what you're trying to get rid of or worried about, and it walks you to an action.","assist.seed":"Hi — tell me what you have, like \"an old laptop and some batteries,\" and I'll point you to what to do with each.","assist.placeholder":"I have an old laptop and some batteries...","assist.send":"Send","assist.doTitle":"What it does","assist.do1":"— Identifies each item you mention","assist.do2":"— Sorts them into the right recycling category","assist.do3":"— Suggests nearby drop-off points","assist.do4":"— Flags anything that needs special handling",
+    "register.title":"Create your free account","register.sub":"Save your location once to get recycling results and alerts tuned to where you actually live.","register.cta":"Get started",
+    "footer.tag":"Detect. Predict. Protect.","footer.note":"Demo build — recycling data, alerts, and news shown here are illustrative.",
+    "modal.title":"Join Earth911","modal.sub":"Free account — takes under a minute.","modal.name":"Full name","modal.email":"Email","modal.password":"Password","modal.locPrompt":"Share your location so we can find recycling centers near you.","modal.locBtn":"Use my location","modal.submit":"Create account",
+    "toast.registered":"Account created — welcome to Earth911.","toast.located":"Location saved.","toast.needName":"Please add your name and email first."
+  },
+  ar: { dir:"rtl", name:"العربية",
+    "nav.recycling":"إعادة التدوير","nav.locations":"المواقع","nav.alerts":"التنبيهات","nav.news":"الأخبار","nav.learn":"تعلّم","nav.ai":"المساعد الذكي","nav.join":"انضم مجانًا",
+    "hero.eyebrow":"معلومات بيئية لحظية","hero.title":"اجعل كل قطعة، وكل تنبيه، له قيمة.","hero.lede":"اعثر على أماكن إعادة تدوير أي شيء تقريبًا، وتابع المخاطر البيئية القريبة منك، واحصل على إرشادات بسيطة لما يجب فعله.","hero.searchPlaceholder":"ماذا تريد إعادة تدويره؟","hero.searchBtn":"بحث","hero.secondary":"عرض الخريطة","hero.signalCaption":"قراءة لحظية لإمكانية إعادة التدوير والمخاطر البيئية في إشارة واحدة.",
+    "pillar1.title":"اكتشف","pillar1.body":"نرسم مراكز إعادة التدوير ونقاط التسليم وأجهزة الاستشعار البيئية في منطقتك حتى لا يضيع أي مورد مفيد.","pillar2.title":"تنبّأ","pillar2.body":"نتابع جودة الهواء والفيضانات وحرائق الغابات لترى الخطر قبل أن يصل إليك.","pillar3.title":"احمِ","pillar3.body":"كل نتيجة تنتهي بإجراء واضح: أين تأخذ القطعة، وما الذي يجب التحقق منه، أو كيف تبقى آمنًا اليوم.",
+    "recycle.kicker":"هل يمكنني إعادة تدوير هذا؟","recycle.title":"اسأل عن أي قطعة","recycle.sub":"اكتب اسم قطعة أعلاه — بطاريات، هاتف قديم، زجاج، ملابس — واحصل على تصنيفها وتوصية وأقرب المراكز.","recycle.category":"التصنيف: أجهزة إلكترونية","recycle.recommendation":"خذها إلى مركز إعادة تدوير إلكترونيات — معظمها يقبل الشواحن والملحقات الصغيرة أيضًا.","recycle.centerA":"مركز النفايات الإلكترونية بوسط المدينة","recycle.centerB":"مركز غرين لاين لإعادة التدوير",
+    "loc.kicker":"بالقرب منك","loc.title":"مواقع إعادة التدوير","loc.sub":"تصفح المراكز القريبة منك حسب المادة — إلكترونيات، زجاج، معدن، أقمشة، وغيرها.","loc.item1":"مركز النفايات الإلكترونية بوسط المدينة","loc.item1meta":"إلكترونيات · 2.1 كم","loc.item2":"مركز غرين لاين لإعادة التدوير","loc.item2meta":"حواسيب وإلكترونيات · 4.3 كم","loc.item3":"مستودع الزجاج والمعادن على الضفة","loc.item3meta":"زجاج، معدن · 3.6 كم","loc.item4":"بنك الأقمشة المجتمعي","loc.item4meta":"ملابس، أقمشة · 1.4 كم","loc.item5":"نقطة تجميع البطاريات بالمدينة","loc.item5meta":"بطاريات · 5.0 كم",
+    "alerts.kicker":"مركز التنبيهات البيئية","alerts.title":"اعرف الخطر من حولك","alerts.sub":"تنبيهات تجريبية لهذا العرض — النسخة الفعلية تتصل بخدمات بيانات الطقس والبيئة.","alerts.a1level":"خطر متوسط","alerts.a1title":"مراقبة جودة الهواء","alerts.a1body":"قد تكون الأجواء غير صحية للفئات الحساسة. قلّل من المجهود الخارجي المطوّل.","alerts.a2level":"خطر مرتفع","alerts.a2title":"إنذار فيضان","alerts.a2body":"أمطار غزيرة متوقعة. على المناطق المنخفضة قرب الأنهار الاستعداد لاحتمال الفيضان.","alerts.a3level":"خطر منخفض","alerts.a3title":"توقعات حرائق الغابات","alerts.a3body":"استمرار الجفاف في المنطقة. لا حرائق نشطة قرب المناطق المأهولة.","alerts.a4level":"خطر متوسط","alerts.a4title":"طقس شديد","alerts.a4body":"رياح قوية محتملة هذا المساء. ثبّت الأغراض الخارجية قبل حلول الليل.",
+    "news.kicker":"أخبار بيئية عالمية","news.title":"ما الذي يحدث على كوكبنا","news.sub":"تغطية مختارة لأخبار المناخ والحفاظ على البيئة وإعادة التدوير حول العالم.","news.featureTag":"مميز · المناخ","news.featureTitle":"مدن ساحلية توسّع دفاعاتها ضد الفيضانات مع تغيّر مستوى البحر","news.featureBody":"يسرّع المهندسون ومخططو المدن في عدة مناطق ساحلية مشاريع الحواجز والصرف، بهدف حماية الأحياء المنخفضة خلال العقد القادم.","news.i1src":"الحفاظ على البيئة","news.i1title":"جهود إعادة التشجير تتجاوز مليون شجرة هذا العام","news.i1body":"برامج الزراعة التطوعية تسجل مشاركة قياسية في ثلاث قارات.","news.i2src":"إعادة التدوير","news.i2title":"معيار جديد لإعادة تدوير البطاريات تتبناه شركات كبرى","news.i2body":"يهدف الاتفاق إلى استعادة كميات أكبر من الليثيوم والكوبالت من الإلكترونيات.","news.i3src":"جودة الهواء","news.i3title":"عدة مدن كبرى تسجل أنظف هواء منذ عقد","news.i3body":"يعزو المسؤولون ذلك إلى قواعد انبعاثات أكثر صرامة وشبكات نقل عام أوسع.","news.i4src":"المحيطات","news.i4title":"توسّع المناطق البحرية المحمية لتشمل مناطق صيد جديدة","news.i4body":"توصلت جهات الصيد والحفاظ على البيئة إلى اتفاق بشأن حماية موسمية.","news.note":"محتوى تجريبي لهذا العرض. النسخة المتصلة تجلب عناوين حية من مصادر الأخبار البيئية.",
+    "learn.kicker":"مركز الاستدامة","learn.title":"تعلّم الأساسيات","learn.c1":"أساسيات إعادة التدوير","learn.c1body":"ما الذي يُعاد تدويره فعلًا، وما لا يُعاد.","learn.c2":"حياة مستدامة","learn.c2body":"عادات صغيرة تتراكم خلال عام.","learn.c3":"ترشيد المياه","learn.c3body":"إلى أين تذهب مياه المنزل فعلًا.","learn.c4":"كفاءة الطاقة","learn.c4body":"تقليل الهدر قبل إضافة الطاقة الشمسية.","learn.c5":"المناخ والبيئة","learn.c5body":"المفاهيم التي وراء العناوين.","learn.c6":"تقليل النفايات","learn.c6body":"قلّل وأعد الاستخدام، قبل إعادة التدوير.",
+    "assist.kicker":"مساعد Earth911 الذكي","assist.title":"صف ما لديك","assist.sub":"أخبره بما تريد التخلص منه أو ما يقلقك، وسيدلّك على إجراء محدد.","assist.seed":"مرحبًا — أخبرني بما لديك، مثل \"حاسوب قديم وبعض البطاريات\"، وسأدلّك على ما تفعله بكل منها.","assist.placeholder":"لدي حاسوب قديم وبعض البطاريات...","assist.send":"إرسال","assist.doTitle":"ما الذي يقوم به","assist.do1":"— يحدد كل قطعة تذكرها","assist.do2":"— يصنفها ضمن الفئة الصحيحة لإعادة التدوير","assist.do3":"— يقترح أقرب نقاط التسليم","assist.do4":"— ينبهك لأي قطعة تحتاج تعاملًا خاصًا",
+    "register.title":"أنشئ حسابك المجاني","register.sub":"احفظ موقعك مرة واحدة للحصول على نتائج وتنبيهات مضبوطة حسب مكانك الفعلي.","register.cta":"ابدأ الآن",
+    "footer.tag":"اكتشف. تنبأ. احمِ.","footer.note":"نسخة تجريبية — بيانات إعادة التدوير والتنبيهات والأخبار هنا توضيحية.",
+    "modal.title":"انضم إلى Earth911","modal.sub":"حساب مجاني — يستغرق أقل من دقيقة.","modal.name":"الاسم الكامل","modal.email":"البريد الإلكتروني","modal.password":"كلمة المرور","modal.locPrompt":"شارك موقعك حتى نجد لك أقرب مراكز إعادة التدوير.","modal.locBtn":"استخدام موقعي","modal.submit":"إنشاء حساب",
+    "toast.registered":"تم إنشاء الحساب — أهلًا بك في Earth911.","toast.located":"تم حفظ الموقع.","toast.needName":"يرجى إضافة الاسم والبريد الإلكتروني أولًا."
+  },
+  es: { dir:"ltr", name:"Español",
+    "nav.recycling":"Reciclaje","nav.locations":"Ubicaciones","nav.alerts":"Alertas","nav.news":"Noticias","nav.learn":"Aprender","nav.ai":"Asistente IA","nav.join":"Únete gratis",
+    "hero.eyebrow":"Inteligencia ambiental en vivo","hero.title":"Haz que cada objeto, y cada alerta, cuenten.","hero.lede":"Encuentra dónde reciclar casi cualquier cosa, sigue el riesgo ambiental cerca de ti y recibe orientación clara sobre qué hacer.","hero.searchPlaceholder":"¿Qué quieres reciclar?","hero.searchBtn":"Buscar","hero.secondary":"Ver el mapa","hero.signalCaption":"Una lectura en vivo del acceso al reciclaje y el riesgo ambiental, en una sola señal.",
+    "pillar1.title":"Detectar","pillar1.body":"Mapeamos centros de reciclaje, puntos de entrega y sensores ambientales en tu zona para que nada útil quede oculto.","pillar2.title":"Predecir","pillar2.body":"Se monitorean la calidad del aire, inundaciones e incendios forestales para que veas el riesgo antes de que te alcance.","pillar3.title":"Proteger","pillar3.body":"Cada resultado termina en una acción: dónde llevar un objeto, qué revisar o cómo mantenerte a salvo hoy.",
+    "recycle.kicker":"¿Puedo reciclar esto?","recycle.title":"Pregunta por cualquier objeto","recycle.sub":"Escribe un objeto arriba — pilas, un teléfono viejo, vidrio, ropa — y obtén categoría, recomendación y centros cercanos.","recycle.category":"Categoría: Equipo electrónico","recycle.recommendation":"Llévalo a una planta de reciclaje electrónico — la mayoría también acepta cargadores y accesorios pequeños.","recycle.centerA":"Centro de e-residuos del centro","recycle.centerB":"Centro de reciclaje Greenline",
+    "loc.kicker":"Cerca de ti","loc.title":"Centros de reciclaje","loc.sub":"Explora centros cercanos por material — electrónica, vidrio, metal, textiles y más.","loc.item1":"Centro de e-residuos del centro","loc.item1meta":"Electrónica · 2.1 km","loc.item2":"Centro de reciclaje Greenline","loc.item2meta":"Computadoras y electrónica · 4.3 km","loc.item3":"Depósito de vidrio y metal ribereño","loc.item3meta":"Vidrio, metal · 3.6 km","loc.item4":"Banco textil comunitario","loc.item4meta":"Ropa, tela · 1.4 km","loc.item5":"Punto de recolección de pilas","loc.item5meta":"Pilas · 5.0 km",
+    "alerts.kicker":"Centro de alertas ambientales","alerts.title":"Conoce el riesgo a tu alrededor","alerts.sub":"Alertas de demostración para esta vista previa — la versión en vivo se conecta a servicios de datos meteorológicos y ambientales.","alerts.a1level":"Riesgo moderado","alerts.a1title":"Vigilancia de calidad del aire","alerts.a1body":"Las condiciones pueden ser dañinas para grupos sensibles. Limita el esfuerzo prolongado al aire libre.","alerts.a2level":"Riesgo alto","alerts.a2title":"Vigilancia de inundaciones","alerts.a2body":"Se esperan lluvias intensas. Las zonas bajas cerca de ríos deben prepararse ante posibles inundaciones.","alerts.a3level":"Riesgo bajo","alerts.a3title":"Panorama de incendios forestales","alerts.a3body":"Persisten condiciones secas en la región. No se reportan incendios activos cerca de zonas pobladas.","alerts.a4level":"Riesgo moderado","alerts.a4title":"Clima severo","alerts.a4body":"Vientos fuertes posibles esta noche. Asegura objetos exteriores sueltos antes del anochecer.",
+    "news.kicker":"Noticias ambientales del mundo","news.title":"Qué está pasando en el planeta","news.sub":"Cobertura seleccionada sobre clima, conservación y reciclaje en todo el mundo.","news.featureTag":"Destacado · Clima","news.featureTitle":"Ciudades costeras amplían sus defensas ante el aumento del nivel del mar","news.featureBody":"Ingenieros y urbanistas de varias regiones costeras aceleran proyectos de barreras y drenaje para proteger barrios bajos en la próxima década.","news.i1src":"Conservación","news.i1title":"Los esfuerzos de reforestación superan el millón de árboles este año","news.i1body":"Programas voluntarios de plantación registran participación récord en tres continentes.","news.i2src":"Reciclaje","news.i2title":"Nuevo estándar de reciclaje de baterías adoptado por grandes fabricantes","news.i2body":"El acuerdo busca recuperar más litio y cobalto de la electrónica de consumo.","news.i3src":"Calidad del aire","news.i3title":"Varias grandes ciudades reportan el aire más limpio en una década","news.i3body":"Las autoridades atribuyen esto a normas de emisiones más estrictas y transporte público ampliado.","news.i4src":"Océanos","news.i4title":"Las áreas marinas protegidas crecen para cubrir nuevas zonas de pesca","news.i4body":"Grupos pesqueros y de conservación acuerdan protecciones estacionales.","news.note":"Contenido de vista previa para esta demo. Una versión conectada trae titulares en vivo de fuentes de noticias ambientales.",
+    "learn.kicker":"Centro de sostenibilidad","learn.title":"Aprende lo básico","learn.c1":"Fundamentos del reciclaje","learn.c1body":"Qué se recicla realmente y qué no.","learn.c2":"Vida sostenible","learn.c2body":"Pequeños hábitos que suman en un año.","learn.c3":"Conservación del agua","learn.c3body":"A dónde va realmente el agua del hogar.","learn.c4":"Eficiencia energética","learn.c4body":"Reducir el desperdicio antes de sumar energía solar.","learn.c5":"Clima y ambiente","learn.c5body":"Los conceptos detrás de los titulares.","learn.c6":"Reducción de residuos","learn.c6body":"Reduce y reutiliza, antes de reciclar.",
+    "assist.kicker":"Asistente IA de Earth911","assist.title":"Describe lo que tienes","assist.sub":"Dile qué quieres desechar o qué te preocupa, y te guiará hacia una acción.","assist.seed":"Hola — cuéntame qué tienes, como \"una laptop vieja y algunas pilas\", y te diré qué hacer con cada uno.","assist.placeholder":"Tengo una laptop vieja y algunas pilas...","assist.send":"Enviar","assist.doTitle":"Qué hace","assist.do1":"— Identifica cada objeto que mencionas","assist.do2":"— Los clasifica en la categoría correcta","assist.do3":"— Sugiere puntos de entrega cercanos","assist.do4":"— Marca lo que necesite manejo especial",
+    "register.title":"Crea tu cuenta gratis","register.sub":"Guarda tu ubicación una vez para recibir resultados y alertas ajustadas a donde vives.","register.cta":"Comenzar",
+    "footer.tag":"Detectar. Predecir. Proteger.","footer.note":"Compilación de demostración — los datos de reciclaje, alertas y noticias aquí son ilustrativos.",
+    "modal.title":"Únete a Earth911","modal.sub":"Cuenta gratis — toma menos de un minuto.","modal.name":"Nombre completo","modal.email":"Correo electrónico","modal.password":"Contraseña","modal.locPrompt":"Comparte tu ubicación para encontrar centros de reciclaje cerca de ti.","modal.locBtn":"Usar mi ubicación","modal.submit":"Crear cuenta",
+    "toast.registered":"Cuenta creada — bienvenido a Earth911.","toast.located":"Ubicación guardada.","toast.needName":"Agrega primero tu nombre y correo."
+  },
+  fr: { dir:"ltr", name:"Français",
+    "nav.recycling":"Recyclage","nav.locations":"Lieux","nav.alerts":"Alertes","nav.news":"Actualités","nav.learn":"Apprendre","nav.ai":"Assistant IA","nav.join":"Rejoindre gratuitement",
+    "hero.eyebrow":"Intelligence environnementale en direct","hero.title":"Faites compter chaque objet, et chaque alerte.","hero.lede":"Trouvez où recycler presque tout, suivez le risque environnemental près de chez vous et obtenez des conseils clairs sur quoi faire.","hero.searchPlaceholder":"Que voulez-vous recycler ?","hero.searchBtn":"Rechercher","hero.secondary":"Voir la carte","hero.signalCaption":"Une lecture en direct de l'accès au recyclage et du risque environnemental, en un seul signal.",
+    "pillar1.title":"Détecter","pillar1.body":"Nous cartographions les centres de recyclage, points de dépôt et capteurs environnementaux de votre zone.","pillar2.title":"Prédire","pillar2.body":"La qualité de l'air, les inondations et les feux de forêt sont suivis pour anticiper le risque.","pillar3.title":"Protéger","pillar3.body":"Chaque résultat se termine par une action concrète : où déposer un objet, quoi vérifier, ou comment rester en sécurité.",
+    "recycle.kicker":"Puis-je recycler ceci ?","recycle.title":"Posez une question sur un objet","recycle.sub":"Saisissez un objet ci-dessus — piles, vieux téléphone, verre, vêtements — et obtenez une catégorie, une recommandation et des centres proches.","recycle.category":"Catégorie : Équipement électronique","recycle.recommendation":"Apportez-le à un centre de recyclage électronique — la plupart acceptent aussi chargeurs et petits accessoires.","recycle.centerA":"Centre de déchets électroniques du centre-ville","recycle.centerB":"Pôle de recyclage Greenline",
+    "loc.kicker":"À proximité","loc.title":"Lieux de recyclage","loc.sub":"Parcourez les centres proches par matériau — électronique, verre, métal, textiles, etc.","loc.item1":"Centre de déchets électroniques du centre-ville","loc.item1meta":"Électronique · 2,1 km","loc.item2":"Pôle de recyclage Greenline","loc.item2meta":"Ordinateurs et électronique · 4,3 km","loc.item3":"Dépôt de verre et métal en bord de rivière","loc.item3meta":"Verre, métal · 3,6 km","loc.item4":"Banque textile communautaire","loc.item4meta":"Vêtements, tissu · 1,4 km","loc.item5":"Point de collecte de piles","loc.item5meta":"Piles · 5,0 km",
+    "alerts.kicker":"Centre d'alertes environnementales","alerts.title":"Connaître le risque autour de vous","alerts.sub":"Alertes de démonstration pour cet aperçu — la version en direct se connecte à des services météo et environnementaux.","alerts.a1level":"Risque modéré","alerts.a1title":"Vigilance qualité de l'air","alerts.a1body":"Conditions potentiellement néfastes pour les groupes sensibles. Limitez l'effort prolongé en extérieur.","alerts.a2level":"Risque élevé","alerts.a2title":"Vigilance inondation","alerts.a2body":"Fortes pluies attendues. Les zones basses près des rivières doivent se préparer.","alerts.a3level":"Risque faible","alerts.a3title":"Perspective feux de forêt","alerts.a3body":"Conditions sèches persistantes dans la région. Aucun incendie actif près des zones habitées.","alerts.a4level":"Risque modéré","alerts.a4title":"Météo sévère","alerts.a4body":"Vents forts possibles ce soir. Sécurisez les objets extérieurs avant la nuit.",
+    "news.kicker":"Actualités environnementales mondiales","news.title":"Ce qui se passe sur la planète","news.sub":"Une sélection d'articles sur le climat, la conservation et le recyclage à travers le monde.","news.featureTag":"À la une · Climat","news.featureTitle":"Les villes côtières renforcent leurs défenses face à la montée des eaux","news.featureBody":"Ingénieurs et urbanistes accélèrent les projets de digues et de drainage dans plusieurs régions côtières pour protéger les quartiers bas.","news.i1src":"Conservation","news.i1title":"Les efforts de reboisement dépassent un million d'arbres cette année","news.i1body":"Les programmes de plantation bénévole enregistrent une participation record sur trois continents.","news.i2src":"Recyclage","news.i2title":"Une nouvelle norme de recyclage des batteries adoptée par de grands fabricants","news.i2body":"L'accord vise à récupérer davantage de lithium et de cobalt issus de l'électronique grand public.","news.i3src":"Qualité de l'air","news.i3title":"Plusieurs grandes villes annoncent l'air le plus pur depuis dix ans","news.i3body":"Les autorités l'attribuent à des règles d'émissions plus strictes et à un réseau de transport public élargi.","news.i4src":"Océans","news.i4title":"Les aires marines protégées s'étendent à de nouvelles zones de pêche","news.i4body":"Pêcheurs et défenseurs de l'environnement s'accordent sur des protections saisonnières.","news.note":"Contenu d'aperçu pour cette démo. Une version connectée récupère les titres en direct de sources environnementales.",
+    "learn.kicker":"Pôle de durabilité","learn.title":"Apprendre les bases","learn.c1":"Bases du recyclage","learn.c1body":"Ce qui est vraiment recyclé, et ce qui ne l'est pas.","learn.c2":"Vie durable","learn.c2body":"De petites habitudes qui s'additionnent sur un an.","learn.c3":"Économie d'eau","learn.c3body":"Où va vraiment l'eau du foyer.","learn.c4":"Efficacité énergétique","learn.c4body":"Réduire le gaspillage avant d'ajouter du solaire.","learn.c5":"Climat et environnement","learn.c5body":"Les concepts derrière les titres.","learn.c6":"Réduction des déchets","learn.c6body":"Réduire et réutiliser, avant de recycler.",
+    "assist.kicker":"Assistant IA Earth911","assist.title":"Décrivez ce que vous avez","assist.sub":"Dites-lui ce dont vous voulez vous débarrasser ou ce qui vous inquiète, il vous guide vers une action.","assist.seed":"Bonjour — dites-moi ce que vous avez, comme « un vieil ordinateur portable et des piles », et je vous indiquerai quoi faire pour chacun.","assist.placeholder":"J'ai un vieil ordinateur portable et des piles...","assist.send":"Envoyer","assist.doTitle":"Ce qu'il fait","assist.do1":"— Identifie chaque objet mentionné","assist.do2":"— Le classe dans la bonne catégorie de recyclage","assist.do3":"— Suggère des points de dépôt proches","assist.do4":"— Signale ce qui nécessite un traitement spécial",
+    "register.title":"Créez votre compte gratuit","register.sub":"Enregistrez votre position une fois pour des résultats et alertes adaptés à votre lieu de vie.","register.cta":"Commencer",
+    "footer.tag":"Détecter. Prédire. Protéger.","footer.note":"Version de démonstration — les données de recyclage, alertes et actualités sont illustratives.",
+    "modal.title":"Rejoindre Earth911","modal.sub":"Compte gratuit — moins d'une minute.","modal.name":"Nom complet","modal.email":"E-mail","modal.password":"Mot de passe","modal.locPrompt":"Partagez votre position pour trouver des centres de recyclage proches.","modal.locBtn":"Utiliser ma position","modal.submit":"Créer un compte",
+    "toast.registered":"Compte créé — bienvenue sur Earth911.","toast.located":"Position enregistrée.","toast.needName":"Ajoutez d'abord votre nom et e-mail."
+  },
+  zh: { dir:"ltr", name:"中文",
+    "nav.recycling":"回收","nav.locations":"位置","nav.alerts":"预警","nav.news":"新闻","nav.learn":"学习","nav.ai":"AI 助手","nav.join":"免费加入",
+    "hero.eyebrow":"实时环境情报","hero.title":"让每一件物品、每一次预警都有意义。","hero.lede":"查找几乎任何物品的回收地点，追踪您附近的环境风险，并获得简明的下一步指引。","hero.searchPlaceholder":"您想回收什么？","hero.searchBtn":"搜索","hero.secondary":"查看地图","hero.signalCaption":"将回收可及性与环境风险实时汇总为一个信号。",
+    "pillar1.title":"发现","pillar1.body":"我们绘制您所在区域的回收中心、投放点和环境传感器，确保不遗漏任何有用资源。","pillar2.title":"预测","pillar2.body":"持续追踪空气质量、洪水和野火信号，让您在风险到来前就能察觉。","pillar3.title":"守护","pillar3.body":"每一个结果都指向具体行动：物品该送去哪里、需要检查什么，或今天如何保持安全。",
+    "recycle.kicker":"这个可以回收吗？","recycle.title":"询问任意物品","recycle.sub":"在上方输入物品名称——电池、旧手机、玻璃、衣物——即可获得分类、建议和附近的回收中心。","recycle.category":"类别：电子设备","recycle.recommendation":"请送往电子废弃物回收站——大多数也接受充电器和小配件。","recycle.centerA":"市中心电子废弃物回收中心","recycle.centerB":"绿线回收中心",
+    "loc.kicker":"附近","loc.title":"回收地点","loc.sub":"按材质浏览附近的回收中心——电子产品、玻璃、金属、纺织品等。","loc.item1":"市中心电子废弃物回收中心","loc.item1meta":"电子产品 · 2.1 公里","loc.item2":"绿线回收中心","loc.item2meta":"电脑与电子产品 · 4.3 公里","loc.item3":"河畔玻璃金属回收站","loc.item3meta":"玻璃、金属 · 3.6 公里","loc.item4":"社区纺织品捐赠站","loc.item4meta":"衣物、布料 · 1.4 公里","loc.item5":"城市电池回收点","loc.item5meta":"电池 · 5.0 公里",
+    "alerts.kicker":"环境预警中心","alerts.title":"了解您周围的风险","alerts.sub":"本预览为演示预警——正式版本将连接天气与环境数据服务。","alerts.a1level":"中度风险","alerts.a1title":"空气质量提醒","alerts.a1body":"敏感人群可能受到影响，请减少长时间户外活动。","alerts.a2level":"高风险","alerts.a2title":"洪水预警","alerts.a2body":"预计将有强降雨，河流沿岸低洼地区应做好防洪准备。","alerts.a3level":"低风险","alerts.a3title":"野火展望","alerts.a3body":"该地区持续干燥，但人口密集区附近暂无活跃火情。","alerts.a4level":"中度风险","alerts.a4title":"恶劣天气","alerts.a4body":"今晚可能有大风，请提前固定户外物品。",
+    "news.kicker":"全球环境新闻","news.title":"地球上正在发生什么","news.sub":"精选来自世界各地的气候、保护与回收报道。","news.featureTag":"精选 · 气候","news.featureTitle":"随着海平面变化，沿海城市扩大防洪工程","news.featureBody":"多个沿海地区的工程师和城市规划者正加快堤防与排水项目建设，力求在未来十年内保护低洼社区。","news.i1src":"生态保护","news.i1title":"今年植树造林突破一百万棵","news.i1body":"志愿植树项目在三大洲创下参与人数新高。","news.i2src":"回收","news.i2title":"多家主要厂商采用新的电池回收标准","news.i2body":"该协议旨在从消费电子产品中回收更多锂和钴。","news.i3src":"空气质量","news.i3title":"多个大城市空气质量创十年最佳","news.i3body":"官员将此归功于更严格的排放法规和公共交通网络的扩展。","news.i4src":"海洋","news.i4title":"海洋保护区扩展至新的渔业区域","news.i4body":"渔业与环保团体就季节性保护措施达成一致。","news.note":"以上为演示内容。正式版本将从环境新闻来源获取实时头条。",
+    "learn.kicker":"可持续发展中心","learn.title":"学习基础知识","learn.c1":"回收基础","learn.c1body":"哪些真正能被回收，哪些不能。","learn.c2":"可持续生活","learn.c2body":"日积月累的小习惯。","learn.c3":"节约用水","learn.c3body":"家庭用水究竟流向何处。","learn.c4":"能源效率","learn.c4body":"在增设太阳能之前先减少浪费。","learn.c5":"气候与环境","learn.c5body":"新闻标题背后的基本概念。","learn.c6":"减少废弃物","learn.c6body":"先减量、再重复使用，最后才回收。",
+    "assist.kicker":"Earth911 AI 助手","assist.title":"描述您拥有的物品","assist.sub":"告诉它您想处理或担心的事物，它会为您指引具体行动。","assist.seed":"您好——告诉我您有什么，比如“一台旧笔记本电脑和一些电池”，我会分别告诉您怎么处理。","assist.placeholder":"我有一台旧笔记本电脑和一些电池……","assist.send":"发送","assist.doTitle":"它能做什么","assist.do1":"— 识别您提到的每件物品","assist.do2":"— 将其归入正确的回收类别","assist.do3":"— 推荐附近的投放点","assist.do4":"— 标记需要特殊处理的物品",
+    "register.title":"创建您的免费账户","register.sub":"保存一次您的位置，即可获得针对您所在地的回收结果和预警。","register.cta":"立即开始",
+    "footer.tag":"发现。预测。守护。","footer.note":"演示版本——此处展示的回收数据、预警与新闻仅供说明。",
+    "modal.title":"加入 Earth911","modal.sub":"免费账户——不到一分钟即可完成。","modal.name":"姓名","modal.email":"电子邮箱","modal.password":"密码","modal.locPrompt":"分享您的位置，以便我们找到附近的回收中心。","modal.locBtn":"使用我的位置","modal.submit":"创建账户",
+    "toast.registered":"账户已创建——欢迎使用 Earth911。","toast.located":"位置已保存。","toast.needName":"请先填写姓名和邮箱。"
+  },
+  hi: { dir:"ltr", name:"हिन्दी",
+    "nav.recycling":"रीसाइक्लिंग","nav.locations":"स्थान","nav.alerts":"अलर्ट","nav.news":"समाचार","nav.learn":"सीखें","nav.ai":"AI सहायक","nav.join":"मुफ़्त जुड़ें",
+    "hero.eyebrow":"लाइव पर्यावरण जानकारी","hero.title":"हर वस्तु, और हर अलर्ट, को मायने दें।","hero.lede":"लगभग किसी भी चीज़ को रीसाइकल करने की जगह खोजें, अपने आस-पास पर्यावरणीय जोखिम पर नज़र रखें, और आगे क्या करना है इसकी सरल जानकारी पाएं।","hero.searchPlaceholder":"आप क्या रीसाइकल करना चाहते हैं?","hero.searchBtn":"खोजें","hero.secondary":"मानचित्र देखें","hero.signalCaption":"रीसाइक्लिंग पहुंच और पर्यावरणीय जोखिम की एक ही संकेत में लाइव जानकारी।",
+    "pillar1.title":"पहचानें","pillar1.body":"हम आपके क्षेत्र के रीसाइक्लिंग केंद्रों, ड्रॉप-ऑफ पॉइंट और पर्यावरण सेंसर की मैपिंग करते हैं ताकि कोई भी उपयोगी संसाधन छूट न जाए।","pillar2.title":"पूर्वानुमान","pillar2.body":"वायु गुणवत्ता, बाढ़ और जंगल की आग के संकेतों पर नज़र रखी जाती है ताकि खतरा पहुंचने से पहले आप उसे देख सकें।","pillar3.title":"सुरक्षा","pillar3.body":"हर परिणाम एक कार्रवाई पर समाप्त होता है: वस्तु कहाँ ले जाएं, क्या जांचें, या आज सुरक्षित कैसे रहें।",
+    "recycle.kicker":"क्या मैं इसे रीसाइकल कर सकता हूँ?","recycle.title":"किसी भी वस्तु के बारे में पूछें","recycle.sub":"ऊपर एक वस्तु टाइप करें — बैटरी, पुराना फ़ोन, कांच, कपड़े — और श्रेणी, सिफारिश और नज़दीकी केंद्र पाएं।","recycle.category":"श्रेणी: इलेक्ट्रॉनिक उपकरण","recycle.recommendation":"इसे इलेक्ट्रॉनिक रीसाइक्लिंग सुविधा में ले जाएं — अधिकांश चार्जर और छोटे सामान भी स्वीकार करते हैं।","recycle.centerA":"डाउनटाउन ई-वेस्ट सेंटर","recycle.centerB":"ग्रीनलाइन रीसाइक्लिंग हब",
+    "loc.kicker":"आस-पास","loc.title":"रीसाइक्लिंग स्थान","loc.sub":"सामग्री के अनुसार नज़दीकी केंद्र देखें — इलेक्ट्रॉनिक्स, कांच, धातु, वस्त्र और अधिक।","loc.item1":"डाउनटाउन ई-वेस्ट सेंटर","loc.item1meta":"इलेक्ट्रॉनिक्स · 2.1 कि.मी.","loc.item2":"ग्रीनलाइन रीसाइक्लिंग हब","loc.item2meta":"कंप्यूटर व इलेक्ट्रॉनिक्स · 4.3 कि.मी.","loc.item3":"रिवरसाइड कांच व धातु डिपो","loc.item3meta":"कांच, धातु · 3.6 कि.मी.","loc.item4":"सामुदायिक टेक्सटाइल बैंक","loc.item4meta":"कपड़े · 1.4 कि.मी.","loc.item5":"सिटी बैटरी संग्रह केंद्र","loc.item5meta":"बैटरी · 5.0 कि.मी.",
+    "alerts.kicker":"पर्यावरण अलर्ट केंद्र","alerts.title":"अपने आस-पास के जोखिम को जानें","alerts.sub":"इस प्रीव्यू के लिए डेमो अलर्ट — लाइव संस्करण मौसम और पर्यावरण डेटा सेवाओं से जुड़ेगा।","alerts.a1level":"मध्यम जोखिम","alerts.a1title":"वायु गुणवत्ता चेतावनी","alerts.a1body":"संवेदनशील समूहों के लिए स्थिति अस्वस्थकर हो सकती है। लंबे समय तक बाहरी परिश्रम सीमित करें।","alerts.a2level":"उच्च जोखिम","alerts.a2title":"बाढ़ चेतावनी","alerts.a2body":"भारी बारिश की संभावना है। नदियों के पास निचले क्षेत्रों को संभावित बाढ़ के लिए तैयार रहना चाहिए।","alerts.a3level":"कम जोखिम","alerts.a3title":"जंगल की आग का पूर्वानुमान","alerts.a3body":"क्षेत्र में शुष्क स्थिति बनी हुई है। आबादी वाले क्षेत्रों के पास कोई सक्रिय आग नहीं है।","alerts.a4level":"मध्यम जोखिम","alerts.a4title":"गंभीर मौसम","alerts.a4body":"आज शाम तेज़ हवाएं संभव हैं। रात होने से पहले बाहरी वस्तुओं को सुरक्षित करें।",
+    "news.kicker":"विश्व पर्यावरण समाचार","news.title":"धरती पर क्या हो रहा है","news.sub":"दुनिया भर से जलवायु, संरक्षण और रीसाइक्लिंग की चुनिंदा खबरें।","news.featureTag":"विशेष · जलवायु","news.featureTitle":"समुद्र स्तर बदलने के साथ तटीय शहर बाढ़ रक्षा बढ़ा रहे हैं","news.featureBody":"कई तटीय क्षेत्रों में इंजीनियर और शहर योजनाकार अगले दशक में निचले इलाकों की रक्षा के लिए बैरियर और जल निकासी परियोजनाओं में तेज़ी ला रहे हैं।","news.i1src":"संरक्षण","news.i1title":"इस वर्ष वनरोपण प्रयासों ने दस लाख पेड़ों का आंकड़ा पार किया","news.i1body":"स्वयंसेवी वृक्षारोपण कार्यक्रमों ने तीन महाद्वीपों में रिकॉर्ड भागीदारी दर्ज की।","news.i2src":"रीसाइक्लिंग","news.i2title":"बड़े निर्माताओं ने बैटरी रीसाइक्लिंग का नया मानक अपनाया","news.i2body":"इस समझौते का उद्देश्य उपभोक्ता इलेक्ट्रॉनिक्स से अधिक लिथियम और कोबाल्ट पुनर्प्राप्त करना है।","news.i3src":"वायु गुणवत्ता","news.i3title":"कई प्रमुख शहरों ने एक दशक में सबसे स्वच्छ हवा दर्ज की","news.i3body":"अधिकारी इसका श्रेय सख्त उत्सर्जन नियमों और विस्तारित सार्वजनिक परिवहन नेटवर्क को देते हैं।","news.i4src":"महासागर","news.i4title":"समुद्री संरक्षित क्षेत्र नए मत्स्य क्षेत्रों तक विस्तारित हुए","news.i4body":"मत्स्य पालन और संरक्षण समूह मौसमी सुरक्षा उपायों पर सहमत हुए।","news.note":"यह इस डेमो के लिए प्रीव्यू सामग्री है। जुड़ा हुआ संस्करण पर्यावरण समाचार स्रोतों से लाइव हेडलाइन लाएगा।",
+    "learn.kicker":"स्थिरता केंद्र","learn.title":"बुनियादी बातें सीखें","learn.c1":"रीसाइक्लिंग की मूल बातें","learn.c1body":"वास्तव में क्या रीसाइकल होता है, और क्या नहीं।","learn.c2":"टिकाऊ जीवनशैली","learn.c2body":"छोटी आदतें जो साल भर में जुड़ती हैं।","learn.c3":"जल संरक्षण","learn.c3body":"घर का पानी वास्तव में कहाँ जाता है।","learn.c4":"ऊर्जा दक्षता","learn.c4body":"सौर ऊर्जा जोड़ने से पहले बर्बादी कम करें।","learn.c5":"जलवायु और पर्यावरण","learn.c5body":"सुर्खियों के पीछे की अवधारणाएं।","learn.c6":"अपशिष्ट में कमी","learn.c6body":"रीसाइकल से पहले कम करें और पुनः उपयोग करें।",
+    "assist.kicker":"Earth911 AI सहायक","assist.title":"बताएं आपके पास क्या है","assist.sub":"बताएं कि आप क्या हटाना चाहते हैं या किस बात की चिंता है, यह आपको एक कार्रवाई तक पहुंचाएगा।","assist.seed":"नमस्ते — बताएं आपके पास क्या है, जैसे \"एक पुराना लैपटॉप और कुछ बैटरी\", और मैं बताऊंगा हर एक का क्या करें।","assist.placeholder":"मेरे पास एक पुराना लैपटॉप और कुछ बैटरी हैं...","assist.send":"भेजें","assist.doTitle":"यह क्या करता है","assist.do1":"— आपके बताए हर आइटम की पहचान करता है","assist.do2":"— उन्हें सही रीसाइक्लिंग श्रेणी में क्रमबद्ध करता है","assist.do3":"— नज़दीकी ड्रॉप-ऑफ पॉइंट सुझाता है","assist.do4":"— विशेष देखभाल की जरूरत वाली चीज़ों को चिह्नित करता है",
+    "register.title":"अपना मुफ़्त खाता बनाएं","register.sub":"अपना स्थान एक बार सहेजें ताकि आपके वास्तविक स्थान के अनुरूप परिणाम और अलर्ट मिलें।","register.cta":"शुरू करें",
+    "footer.tag":"पहचानें। पूर्वानुमान। सुरक्षा।","footer.note":"डेमो संस्करण — यहां दिखाया गया रीसाइक्लिंग डेटा, अलर्ट और समाचार उदाहरण मात्र हैं।",
+    "modal.title":"Earth911 से जुड़ें","modal.sub":"मुफ़्त खाता — एक मिनट से भी कम समय में।","modal.name":"पूरा नाम","modal.email":"ईमेल","modal.password":"पासवर्ड","modal.locPrompt":"नज़दीकी रीसाइक्लिंग केंद्र खोजने के लिए अपना स्थान साझा करें।","modal.locBtn":"मेरा स्थान उपयोग करें","modal.submit":"खाता बनाएं",
+    "toast.registered":"खाता बन गया — Earth911 में आपका स्वागत है।","toast.located":"स्थान सहेजा गया।","toast.needName":"कृपया पहले नाम और ईमेल जोड़ें।"
+  },
+  pt: { dir:"ltr", name:"Português",
+    "nav.recycling":"Reciclagem","nav.locations":"Locais","nav.alerts":"Alertas","nav.news":"Notícias","nav.learn":"Aprender","nav.ai":"Assistente IA","nav.join":"Participe grátis",
+    "hero.eyebrow":"Inteligência ambiental em tempo real","hero.title":"Faça cada item, e cada alerta, valer.","hero.lede":"Encontre onde reciclar quase tudo, acompanhe o risco ambiental perto de você e receba orientação clara sobre o que fazer.","hero.searchPlaceholder":"O que você quer reciclar?","hero.searchBtn":"Buscar","hero.secondary":"Ver o mapa","hero.signalCaption":"Uma leitura ao vivo do acesso à reciclagem e do risco ambiental, resumida em um único sinal.",
+    "pillar1.title":"Detectar","pillar1.body":"Mapeamos centros de reciclagem, pontos de coleta e sensores ambientais na sua região.","pillar2.title":"Prever","pillar2.body":"Qualidade do ar, enchentes e incêndios florestais são monitorados para você ver o risco antes que ele chegue.","pillar3.title":"Proteger","pillar3.body":"Cada resultado termina em uma ação: onde levar um item, o que verificar ou como ficar seguro hoje.",
+    "recycle.kicker":"Posso reciclar isto?","recycle.title":"Pergunte sobre qualquer item","recycle.sub":"Digite um item acima — pilhas, um celular velho, vidro, roupas — e receba categoria, recomendação e centros próximos.","recycle.category":"Categoria: Equipamento eletrônico","recycle.recommendation":"Leve a um centro de reciclagem eletrônica — a maioria também aceita carregadores e pequenos acessórios.","recycle.centerA":"Centro de lixo eletrônico do centro","recycle.centerB":"Central de reciclagem Greenline",
+    "loc.kicker":"Perto de você","loc.title":"Locais de reciclagem","loc.sub":"Veja centros próximos por material — eletrônicos, vidro, metal, têxteis e mais.","loc.item1":"Centro de lixo eletrônico do centro","loc.item1meta":"Eletrônicos · 2,1 km","loc.item2":"Central de reciclagem Greenline","loc.item2meta":"Computadores e eletrônicos · 4,3 km","loc.item3":"Depósito de vidro e metal à beira-rio","loc.item3meta":"Vidro, metal · 3,6 km","loc.item4":"Banco têxtil comunitário","loc.item4meta":"Roupas, tecido · 1,4 km","loc.item5":"Ponto de coleta de pilhas","loc.item5meta":"Pilhas · 5,0 km",
+    "alerts.kicker":"Central de alertas ambientais","alerts.title":"Conheça o risco ao seu redor","alerts.sub":"Alertas de demonstração para esta prévia — a versão ao vivo se conecta a serviços de dados meteorológicos e ambientais.","alerts.a1level":"Risco moderado","alerts.a1title":"Alerta de qualidade do ar","alerts.a1body":"As condições podem ser prejudiciais para grupos sensíveis. Limite esforços prolongados ao ar livre.","alerts.a2level":"Risco alto","alerts.a2title":"Alerta de enchente","alerts.a2body":"Chuvas fortes são esperadas. Áreas baixas perto de rios devem se preparar para possíveis enchentes.","alerts.a3level":"Risco baixo","alerts.a3title":"Perspectiva de incêndios florestais","alerts.a3body":"Condições secas persistem na região. Nenhum incêndio ativo relatado perto de áreas povoadas.","alerts.a4level":"Risco moderado","alerts.a4title":"Clima severo","alerts.a4body":"Ventos fortes possíveis esta noite. Prenda objetos externos soltos antes do anoitecer.",
+    "news.kicker":"Notícias ambientais do mundo","news.title":"O que está acontecendo no planeta","news.sub":"Cobertura selecionada sobre clima, conservação e reciclagem ao redor do mundo.","news.featureTag":"Destaque · Clima","news.featureTitle":"Cidades costeiras ampliam defesas contra enchentes com a mudança do nível do mar","news.featureBody":"Engenheiros e planejadores urbanos em várias regiões costeiras aceleram projetos de barreiras e drenagem para proteger bairros baixos na próxima década.","news.i1src":"Conservação","news.i1title":"Esforços de reflorestamento ultrapassam um milhão de árvores este ano","news.i1body":"Programas voluntários de plantio registram participação recorde em três continentes.","news.i2src":"Reciclagem","news.i2title":"Novo padrão de reciclagem de baterias adotado por grandes fabricantes","news.i2body":"O acordo visa recuperar mais lítio e cobalto da eletrônica de consumo.","news.i3src":"Qualidade do ar","news.i3title":"Várias grandes cidades registram o ar mais limpo em uma década","news.i3body":"Autoridades atribuem isso a regras de emissão mais rígidas e redes de transporte público ampliadas.","news.i4src":"Oceanos","news.i4title":"Áreas marinhas protegidas se expandem para novas zonas de pesca","news.i4body":"Grupos de pesca e conservação chegam a acordo sobre proteções sazonais.","news.note":"Conteúdo de prévia para esta demo. Uma versão conectada traz manchetes ao vivo de fontes de notícias ambientais.",
+    "learn.kicker":"Central de sustentabilidade","learn.title":"Aprenda o básico","learn.c1":"Fundamentos da reciclagem","learn.c1body":"O que realmente é reciclado, e o que não é.","learn.c2":"Vida sustentável","learn.c2body":"Pequenos hábitos que somam ao longo de um ano.","learn.c3":"Conservação de água","learn.c3body":"Para onde vai realmente a água doméstica.","learn.c4":"Eficiência energética","learn.c4body":"Reduzir o desperdício antes de adicionar energia solar.","learn.c5":"Clima e meio ambiente","learn.c5body":"Os conceitos por trás das manchetes.","learn.c6":"Redução de resíduos","learn.c6body":"Reduza e reutilize, antes de reciclar.",
+    "assist.kicker":"Assistente IA Earth911","assist.title":"Descreva o que você tem","assist.sub":"Diga o que quer descartar ou o que te preocupa, e ele te guia até uma ação.","assist.seed":"Olá — me diga o que você tem, como \"um notebook velho e algumas pilhas\", e eu indico o que fazer com cada um.","assist.placeholder":"Tenho um notebook velho e algumas pilhas...","assist.send":"Enviar","assist.doTitle":"O que ele faz","assist.do1":"— Identifica cada item que você menciona","assist.do2":"— Classifica na categoria de reciclagem correta","assist.do3":"— Sugere pontos de coleta próximos","assist.do4":"— Sinaliza o que precisa de manuseio especial",
+    "register.title":"Crie sua conta grátis","register.sub":"Salve sua localização uma vez para receber resultados e alertas ajustados a onde você vive.","register.cta":"Começar",
+    "footer.tag":"Detectar. Prever. Proteger.","footer.note":"Versão de demonstração — os dados de reciclagem, alertas e notícias aqui são ilustrativos.",
+    "modal.title":"Participe do Earth911","modal.sub":"Conta grátis — leva menos de um minuto.","modal.name":"Nome completo","modal.email":"E-mail","modal.password":"Senha","modal.locPrompt":"Compartilhe sua localização para encontrarmos centros de reciclagem perto de você.","modal.locBtn":"Usar minha localização","modal.submit":"Criar conta",
+    "toast.registered":"Conta criada — bem-vindo ao Earth911.","toast.located":"Localização salva.","toast.needName":"Adicione seu nome e e-mail primeiro."
+  },
+  ru: { dir:"ltr", name:"Русский",
+    "nav.recycling":"Переработка","nav.locations":"Пункты","nav.alerts":"Оповещения","nav.news":"Новости","nav.learn":"Обучение","nav.ai":"ИИ-помощник","nav.join":"Присоединиться",
+    "hero.eyebrow":"Экологическая аналитика в реальном времени","hero.title":"Пусть каждый предмет и каждое оповещение имеют значение.","hero.lede":"Находите, где переработать почти всё, следите за экологическими рисками рядом с вами и получайте понятные советы, что делать дальше.","hero.searchPlaceholder":"Что вы хотите переработать?","hero.searchBtn":"Искать","hero.secondary":"Смотреть карту","hero.signalCaption":"Живой сигнал о доступности переработки и экологическом риске в одном показателе.",
+    "pillar1.title":"Обнаружить","pillar1.body":"Мы отмечаем пункты переработки, приёма отходов и экологические датчики в вашем районе.","pillar2.title":"Предсказать","pillar2.body":"Отслеживаются качество воздуха, наводнения и лесные пожары, чтобы вы видели риск заранее.","pillar3.title":"Защитить","pillar3.body":"Каждый результат заканчивается конкретным действием: куда отнести предмет, что проверить или как остаться в безопасности сегодня.",
+    "recycle.kicker":"Можно ли это переработать?","recycle.title":"Спросите о любом предмете","recycle.sub":"Введите предмет выше — батарейки, старый телефон, стекло, одежду — и получите категорию, рекомендацию и ближайшие пункты.","recycle.category":"Категория: электронное оборудование","recycle.recommendation":"Отнесите на пункт переработки электроники — большинство также принимает зарядные устройства и мелкие аксессуары.","recycle.centerA":"Центр переработки электроники в центре города","recycle.centerB":"Пункт переработки Greenline",
+    "loc.kicker":"Рядом с вами","loc.title":"Пункты переработки","loc.sub":"Просматривайте ближайшие пункты по типу материала — электроника, стекло, металл, текстиль и другое.","loc.item1":"Центр переработки электроники в центре города","loc.item1meta":"Электроника · 2,1 км","loc.item2":"Пункт переработки Greenline","loc.item2meta":"Компьютеры и электроника · 4,3 км","loc.item3":"Пункт приёма стекла и металла у реки","loc.item3meta":"Стекло, металл · 3,6 км","loc.item4":"Общественный пункт приёма текстиля","loc.item4meta":"Одежда, ткань · 1,4 км","loc.item5":"Городской пункт приёма батареек","loc.item5meta":"Батарейки · 5,0 км",
+    "alerts.kicker":"Центр экологических оповещений","alerts.title":"Узнайте риски вокруг вас","alerts.sub":"Демонстрационные оповещения для этого предпросмотра — рабочая версия подключается к сервисам погодных и экологических данных.","alerts.a1level":"Умеренный риск","alerts.a1title":"Предупреждение о качестве воздуха","alerts.a1body":"Условия могут быть вредны для чувствительных групп. Ограничьте длительную активность на улице.","alerts.a2level":"Высокий риск","alerts.a2title":"Предупреждение о наводнении","alerts.a2body":"Ожидаются сильные дожди. Низменные районы у рек должны подготовиться к возможному подтоплению.","alerts.a3level":"Низкий риск","alerts.a3title":"Прогноз лесных пожаров","alerts.a3body":"В регионе сохраняется сухая погода. Активных пожаров вблизи населённых пунктов не зафиксировано.","alerts.a4level":"Умеренный риск","alerts.a4title":"Суровая погода","alerts.a4body":"Сегодня вечером возможен сильный ветер. Закрепите вещи на улице до наступления темноты.",
+    "news.kicker":"Мировые экологические новости","news.title":"Что происходит на планете","news.sub":"Подборка новостей о климате, охране природы и переработке со всего мира.","news.featureTag":"Главное · Климат","news.featureTitle":"Прибрежные города усиливают защиту от наводнений из-за изменения уровня моря","news.featureBody":"Инженеры и городские планировщики в нескольких прибрежных регионах ускоряют строительство дамб и дренажных систем, чтобы защитить низинные районы в следующем десятилетии.","news.i1src":"Охрана природы","news.i1title":"Усилия по лесовосстановлению превысили миллион деревьев в этом году","news.i1body":"Волонтёрские программы посадки деревьев отмечают рекордное участие на трёх континентах.","news.i2src":"Переработка","news.i2title":"Крупные производители приняли новый стандарт переработки батарей","news.i2body":"Соглашение направлено на извлечение большего количества лития и кобальта из бытовой электроники.","news.i3src":"Качество воздуха","news.i3title":"Несколько крупных городов сообщают о самом чистом воздухе за десятилетие","news.i3body":"Власти связывают это с более строгими нормами выбросов и расширением сети общественного транспорта.","news.i4src":"Океаны","news.i4title":"Морские охраняемые territories расширяются на новые районы рыболовства","news.i4body":"Рыболовные и природоохранные группы согласовали сезонные меры защиты.","news.note":"Демонстрационный контент для этого предпросмотра. Подключённая версия получает актуальные заголовки из экологических новостных источников.",
+    "learn.kicker":"Центр устойчивого развития","learn.title":"Изучите основы","learn.c1":"Основы переработки","learn.c1body":"Что действительно перерабатывается, а что нет.","learn.c2":"Устойчивый образ жизни","learn.c2body":"Небольшие привычки, которые складываются за год.","learn.c3":"Экономия воды","learn.c3body":"Куда на самом деле уходит вода в доме.","learn.c4":"Энергоэффективность","learn.c4body":"Сначала сократить потери, потом добавлять солнечную энергию.","learn.c5":"Климат и окружающая среда","learn.c5body":"Понятия, стоящие за заголовками новостей.","learn.c6":"Сокращение отходов","learn.c6body":"Сократить и использовать повторно — прежде чем перерабатывать.",
+    "assist.kicker":"ИИ-помощник Earth911","assist.title":"Опишите, что у вас есть","assist.sub":"Скажите, от чего хотите избавиться или что вас беспокоит, и он направит вас к действию.","assist.seed":"Привет — расскажите, что у вас есть, например «старый ноутбук и несколько батареек», и я подскажу, что делать с каждым.","assist.placeholder":"У меня старый ноутбук и несколько батареек...","assist.send":"Отправить","assist.doTitle":"Что он делает","assist.do1":"— Определяет каждый упомянутый предмет","assist.do2":"— Сортирует по правильной категории переработки","assist.do3":"— Предлагает ближайшие пункты приёма","assist.do4":"— Отмечает то, что требует особого обращения",
+    "register.title":"Создайте бесплатный аккаунт","register.sub":"Сохраните своё местоположение один раз, чтобы получать результаты и оповещения, настроенные под ваш регион.","register.cta":"Начать",
+    "footer.tag":"Обнаружить. Предсказать. Защитить.","footer.note":"Демонстрационная версия — данные о переработке, оповещения и новости здесь приведены для примера.",
+    "modal.title":"Присоединиться к Earth911","modal.sub":"Бесплатный аккаунт — займёт меньше минуты.","modal.name":"Полное имя","modal.email":"Электронная почта","modal.password":"Пароль","modal.locPrompt":"Поделитесь местоположением, чтобы мы нашли пункты переработки рядом с вами.","modal.locBtn":"Использовать моё местоположение","modal.submit":"Создать аккаунт",
+    "toast.registered":"Аккаунт создан — добро пожаловать в Earth911.","toast.located":"Местоположение сохранено.","toast.needName":"Сначала укажите имя и почту."
+  },
+  de: { dir:"ltr", name:"Deutsch",
+    "nav.recycling":"Recycling","nav.locations":"Standorte","nav.alerts":"Warnungen","nav.news":"Nachrichten","nav.learn":"Lernen","nav.ai":"KI-Assistent","nav.join":"Kostenlos beitreten",
+    "hero.eyebrow":"Live-Umweltinformationen","hero.title":"Lassen Sie jeden Gegenstand — und jede Warnung — zählen.","hero.lede":"Finden Sie, wo Sie fast alles recyceln können, verfolgen Sie Umweltrisiken in Ihrer Nähe und erhalten Sie klare Hinweise zum nächsten Schritt.","hero.searchPlaceholder":"Was möchten Sie recyceln?","hero.searchBtn":"Suchen","hero.secondary":"Karte ansehen","hero.signalCaption":"Eine Live-Ansicht von Recycling-Zugang und Umweltrisiko, verdichtet zu einem Signal.",
+    "pillar1.title":"Erkennen","pillar1.body":"Wir kartieren Recyclingzentren, Sammelstellen und Umweltsensoren in Ihrer Umgebung.","pillar2.title":"Vorhersagen","pillar2.body":"Luftqualität, Überschwemmungen und Waldbrände werden verfolgt, damit Sie Risiken frühzeitig erkennen.","pillar3.title":"Schützen","pillar3.body":"Jedes Ergebnis endet mit einer Handlung: wohin mit dem Gegenstand, was zu prüfen ist, oder wie Sie heute sicher bleiben.",
+    "recycle.kicker":"Kann ich das recyceln?","recycle.title":"Fragen Sie zu jedem Gegenstand","recycle.sub":"Geben Sie oben einen Gegenstand ein — Batterien, ein altes Telefon, Glas, Kleidung — und erhalten Sie Kategorie, Empfehlung und nahe Zentren.","recycle.category":"Kategorie: Elektronikgeräte","recycle.recommendation":"Bringen Sie es zu einer Elektronik-Recyclingstelle — die meisten nehmen auch Ladegeräte und kleines Zubehör an.","recycle.centerA":"Elektroschrott-Zentrum Innenstadt","recycle.centerB":"Greenline Recycling-Hub",
+    "loc.kicker":"In der Nähe","loc.title":"Recycling-Standorte","loc.sub":"Durchsuchen Sie nahe Zentren nach Material — Elektronik, Glas, Metall, Textilien und mehr.","loc.item1":"Elektroschrott-Zentrum Innenstadt","loc.item1meta":"Elektronik · 2,1 km","loc.item2":"Greenline Recycling-Hub","loc.item2meta":"Computer & Elektronik · 4,3 km","loc.item3":"Glas- und Metalldepot am Fluss","loc.item3meta":"Glas, Metall · 3,6 km","loc.item4":"Gemeinschafts-Textilbank","loc.item4meta":"Kleidung, Stoff · 1,4 km","loc.item5":"Städtische Batteriesammelstelle","loc.item5meta":"Batterien · 5,0 km",
+    "alerts.kicker":"Umweltwarnzentrum","alerts.title":"Kennen Sie das Risiko in Ihrer Umgebung","alerts.sub":"Demo-Warnungen für diese Vorschau — die Live-Version verbindet sich mit Wetter- und Umweltdatendiensten.","alerts.a1level":"Mäßiges Risiko","alerts.a1title":"Luftqualitätswarnung","alerts.a1body":"Die Bedingungen können für empfindliche Gruppen ungesund sein. Längere Anstrengung im Freien einschränken.","alerts.a2level":"Hohes Risiko","alerts.a2title":"Hochwasserwarnung","alerts.a2body":"Starke Regenfälle erwartet. Tiefliegende Gebiete an Flüssen sollten sich auf mögliche Überschwemmungen vorbereiten.","alerts.a3level":"Geringes Risiko","alerts.a3title":"Waldbrandausblick","alerts.a3body":"Trockene Bedingungen halten regional an. Keine aktiven Brände in der Nähe besiedelter Gebiete gemeldet.","alerts.a4level":"Mäßiges Risiko","alerts.a4title":"Unwetter","alerts.a4body":"Heute Abend sind starke Winde möglich. Sichern Sie lose Gegenstände im Freien vor Einbruch der Dunkelheit.",
+    "news.kicker":"Weltweite Umweltnachrichten","news.title":"Was auf dem Planeten passiert","news.sub":"Ausgewählte Berichte über Klima, Naturschutz und Recycling aus aller Welt.","news.featureTag":"Im Fokus · Klima","news.featureTitle":"Küstenstädte bauen Hochwasserschutz angesichts steigender Meeresspiegel aus","news.featureBody":"Ingenieure und Stadtplaner in mehreren Küstenregionen beschleunigen Barriere- und Entwässerungsprojekte, um tiefliegende Viertel im kommenden Jahrzehnt zu schützen.","news.i1src":"Naturschutz","news.i1title":"Aufforstungsbemühungen überschreiten dieses Jahr eine Million Bäume","news.i1body":"Freiwillige Pflanzprogramme verzeichnen Rekordbeteiligung auf drei Kontinenten.","news.i2src":"Recycling","news.i2title":"Neuer Batterie-Recyclingstandard von großen Herstellern übernommen","news.i2body":"Die Vereinbarung zielt darauf ab, mehr Lithium und Kobalt aus Unterhaltungselektronik zurückzugewinnen.","news.i3src":"Luftqualität","news.i3title":"Mehrere Großstädte melden die sauberste Luft seit einem Jahrzehnt","news.i3body":"Behörden führen dies auf strengere Emissionsvorschriften und ein erweitertes öffentliches Verkehrsnetz zurück.","news.i4src":"Ozeane","news.i4title":"Meeresschutzgebiete wachsen und umfassen neue Fischereizonen","news.i4body":"Fischerei- und Naturschutzgruppen einigen sich auf saisonale Schutzmaßnahmen.","news.note":"Vorschauinhalt für diese Demo. Eine verbundene Version bezieht Live-Schlagzeilen aus Umweltnachrichtenquellen.",
+    "learn.kicker":"Nachhaltigkeitszentrum","learn.title":"Lernen Sie die Grundlagen","learn.c1":"Recycling-Grundlagen","learn.c1body":"Was wirklich recycelt wird — und was nicht.","learn.c2":"Nachhaltig leben","learn.c2body":"Kleine Gewohnheiten, die sich über ein Jahr summieren.","learn.c3":"Wasser sparen","learn.c3body":"Wohin das Wasser im Haushalt wirklich geht.","learn.c4":"Energieeffizienz","learn.c4body":"Verschwendung reduzieren, bevor Solarenergie hinzukommt.","learn.c5":"Klima & Umwelt","learn.c5body":"Die Konzepte hinter den Schlagzeilen.","learn.c6":"Abfallvermeidung","learn.c6body":"Reduzieren und wiederverwenden — vor dem Recyceln.",
+    "assist.kicker":"Earth911 KI-Assistent","assist.title":"Beschreiben Sie, was Sie haben","assist.sub":"Sagen Sie ihm, was Sie loswerden möchten oder was Sie beunruhigt, und er führt Sie zu einer Handlung.","assist.seed":"Hallo — sagen Sie mir, was Sie haben, etwa „einen alten Laptop und ein paar Batterien“, und ich sage Ihnen, was mit jedem zu tun ist.","assist.placeholder":"Ich habe einen alten Laptop und ein paar Batterien...","assist.send":"Senden","assist.doTitle":"Was er tut","assist.do1":"— Identifiziert jeden genannten Gegenstand","assist.do2":"— Ordnet ihn der richtigen Recyclingkategorie zu","assist.do3":"— Schlägt nahe Sammelstellen vor","assist.do4":"— Markiert alles, was besondere Handhabung braucht",
+    "register.title":"Erstellen Sie Ihr kostenloses Konto","register.sub":"Speichern Sie Ihren Standort einmal, um Ergebnisse und Warnungen passend zu Ihrem Wohnort zu erhalten.","register.cta":"Loslegen",
+    "footer.tag":"Erkennen. Vorhersagen. Schützen.","footer.note":"Demo-Version — die hier gezeigten Recyclingdaten, Warnungen und Nachrichten sind beispielhaft.",
+    "modal.title":"Earth911 beitreten","modal.sub":"Kostenloses Konto — dauert unter einer Minute.","modal.name":"Vollständiger Name","modal.email":"E-Mail","modal.password":"Passwort","modal.locPrompt":"Teilen Sie Ihren Standort, damit wir Recyclingzentren in Ihrer Nähe finden können.","modal.locBtn":"Meinen Standort verwenden","modal.submit":"Konto erstellen",
+    "toast.registered":"Konto erstellt — willkommen bei Earth911.","toast.located":"Standort gespeichert.","toast.needName":"Bitte zuerst Name und E-Mail angeben."
+  },
+  ja: { dir:"ltr", name:"日本語",
+    "nav.recycling":"リサイクル","nav.locations":"拠点","nav.alerts":"アラート","nav.news":"ニュース","nav.learn":"学ぶ","nav.ai":"AIアシスタント","nav.join":"無料登録",
+    "hero.eyebrow":"リアルタイム環境インテリジェンス","hero.title":"すべてのアイテム、すべてのアラートを意味あるものに。","hero.lede":"ほぼあらゆるものをリサイクルできる場所を探し、身近な環境リスクを追跡し、次にすべきことを分かりやすく確認できます。","hero.searchPlaceholder":"何をリサイクルしますか？","hero.searchBtn":"検索","hero.secondary":"地図を見る","hero.signalCaption":"リサイクルへのアクセスと環境リスクをひとつのシグナルにまとめたライブビュー。",
+    "pillar1.title":"検知","pillar1.body":"お住まいの地域のリサイクルセンター、回収拠点、環境センサーをマッピングし、見落としをなくします。","pillar2.title":"予測","pillar2.body":"大気質、洪水、山火事の兆候を追跡し、リスクが及ぶ前に把握できるようにします。","pillar3.title":"保護","pillar3.body":"すべての結果は行動につながります — どこに持って行くか、何を確認するか、今日どう安全を保つか。",
+    "recycle.kicker":"これはリサイクルできますか？","recycle.title":"どんなアイテムでも質問できます","recycle.sub":"上の欄にアイテムを入力してください — 電池、古い携帯電話、ガラス、衣類など — カテゴリー、推奨事項、近くの拠点が表示されます。","recycle.category":"カテゴリー：電子機器","recycle.recommendation":"電子機器リサイクル施設へお持ちください — 多くの施設は充電器や小物アクセサリーも受け付けています。","recycle.centerA":"ダウンタウン電子廃棄物センター","recycle.centerB":"グリーンラインリサイクルハブ",
+    "loc.kicker":"近くの拠点","loc.title":"リサイクル拠点","loc.sub":"素材別に近くのセンターを探せます — 電子機器、ガラス、金属、繊維など。","loc.item1":"ダウンタウン電子廃棄物センター","loc.item1meta":"電子機器 · 2.1 km","loc.item2":"グリーンラインリサイクルハブ","loc.item2meta":"コンピューター・電子機器 · 4.3 km","loc.item3":"リバーサイド ガラス・金属デポ","loc.item3meta":"ガラス、金属 · 3.6 km","loc.item4":"コミュニティ繊維バンク","loc.item4meta":"衣類、布 · 1.4 km","loc.item5":"市の電池回収拠点","loc.item5meta":"電池 · 5.0 km",
+    "alerts.kicker":"環境アラートセンター","alerts.title":"周辺のリスクを知る","alerts.sub":"このプレビュー用のデモアラートです — 実運用版は気象・環境データサービスに接続します。","alerts.a1level":"中リスク","alerts.a1title":"大気質注意報","alerts.a1body":"敏感な方には健康に影響がある可能性があります。屋外での長時間の運動は控えてください。","alerts.a2level":"高リスク","alerts.a2title":"洪水注意報","alerts.a2body":"大雨が予想されます。河川付近の低地は浸水に備えてください。","alerts.a3level":"低リスク","alerts.a3title":"山火事の見通し","alerts.a3body":"地域では乾燥状態が続いています。人口密集地付近での活発な火災は報告されていません。","alerts.a4level":"中リスク","alerts.a4title":"悪天候","alerts.a4body":"今夜は強風の可能性があります。日没前に屋外の物を固定してください。",
+    "news.kicker":"世界の環境ニュース","news.title":"地球で今起きていること","news.sub":"世界中の気候、保全、リサイクルに関するニュースを厳選してお届けします。","news.featureTag":"注目 · 気候","news.featureTitle":"海面上昇を受け、沿岸都市が洪水対策を拡大","news.featureBody":"複数の沿岸地域で技術者や都市計画者が防潮堤や排水プロジェクトを加速させ、今後10年で低地の地域を守ることを目指しています。","news.i1src":"自然保護","news.i1title":"今年の植林活動が100万本を突破","news.i1body":"ボランティアによる植樹プログラムが3大陸で過去最多の参加を記録しました。","news.i2src":"リサイクル","news.i2title":"大手メーカーが新しい電池リサイクル基準を採用","news.i2body":"この協定は家電製品からより多くのリチウムとコバルトを回収することを目指しています。","news.i3src":"大気質","news.i3title":"複数の大都市で10年ぶりに最もきれいな空気を記録","news.i3body":"当局は、より厳しい排出規制と公共交通網の拡大がその要因だとしています。","news.i4src":"海洋","news.i4title":"海洋保護区が新たな漁業区域まで拡大","news.i4body":"漁業団体と保護団体が季節的な保護措置について合意しました。","news.note":"このデモ用のプレビューコンテンツです。接続版では環境ニュース情報源からライブの見出しを取得します。",
+    "learn.kicker":"サステナビリティハブ","learn.title":"基礎を学ぶ","learn.c1":"リサイクルの基本","learn.c1body":"実際に何がリサイクルされ、何がされないか。","learn.c2":"持続可能な暮らし","learn.c2body":"1年で積み重なる小さな習慣。","learn.c3":"節水","learn.c3body":"家庭の水は実際どこへ行くのか。","learn.c4":"省エネルギー","learn.c4body":"太陽光発電を導入する前に無駄を減らす。","learn.c5":"気候と環境","learn.c5body":"見出しの背後にある概念。","learn.c6":"廃棄物削減","learn.c6body":"リサイクルの前に、減らして再利用する。",
+    "assist.kicker":"Earth911 AIアシスタント","assist.title":"お持ちのものを教えてください","assist.sub":"処分したいものや気になることを伝えると、行動へと導きます。","assist.seed":"こんにちは — 「古いノートパソコンと電池」のように、お持ちのものを教えてください。それぞれの対処法をお伝えします。","assist.placeholder":"古いノートパソコンと電池があります...","assist.send":"送信","assist.doTitle":"できること","assist.do1":"— 言及されたアイテムをそれぞれ識別","assist.do2":"— 正しいリサイクルカテゴリーに分類","assist.do3":"— 近くの回収拠点を提案","assist.do4":"— 特別な取り扱いが必要なものを通知",
+    "register.title":"無料アカウントを作成","register.sub":"位置情報を一度保存すると、お住まいの地域に合わせた結果とアラートが受け取れます。","register.cta":"はじめる",
+    "footer.tag":"検知。予測。保護。","footer.note":"デモ版です — リサイクルデータ、アラート、ニュースはすべて説明用の例です。",
+    "modal.title":"Earth911に参加","modal.sub":"無料アカウント — 1分もかかりません。","modal.name":"氏名","modal.email":"メールアドレス","modal.password":"パスワード","modal.locPrompt":"近くのリサイクル拠点を見つけるため、位置情報を共有してください。","modal.locBtn":"現在地を使用","modal.submit":"アカウントを作成",
+    "toast.registered":"アカウントが作成されました — Earth911へようこそ。","toast.located":"位置情報を保存しました。","toast.needName":"先にお名前とメールアドレスを入力してください。"
+  }
+};
+
+const langOrder = ["en","ar","es","fr","zh","hi","pt","ru","de","ja"];
+let currentLang = "en";
+
+function t(key){
+  const dict = translations[currentLang];
+  return (dict && dict[key]) || translations.en[key] || key;
+}
+
+function applyTranslations(){
+  const dict = translations[currentLang];
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key = el.getAttribute("data-i18n");
+    if(dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
+    const key = el.getAttribute("data-i18n-placeholder");
+    if(dict[key]) el.setAttribute("placeholder", dict[key]);
+  });
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = dict.dir;
+  document.body.classList.toggle("rtl", dict.dir === "rtl");
+}
+
+function initLangSwitch(){
+  const sel = document.getElementById("langSwitch");
+  langOrder.forEach(code=>{
+    const opt = document.createElement("option");
+    opt.value = code;
+    opt.textContent = translations[code].name;
+    sel.appendChild(opt);
+  });
+  sel.value = currentLang;
+  sel.addEventListener("change", ()=>{
+    currentLang = sel.value;
+    applyTranslations();
+  });
+}
+
+/* ---------------- recycling search demo ---------------- */
+const categoryMap = [
+  { match:["laptop","computer","phone","charger","electronic","battery","batteries","tv","television"], cat:"electronic" },
+  { match:["glass","bottle","jar"], cat:"glass" },
+  { match:["clothes","clothing","shirt","fabric","textile"], cat:"textile" },
+  { match:["metal","can","aluminum"], cat:"metal" },
+  { match:["paper","cardboard","box"], cat:"paper" }
+];
+const categoryLabel = { electronic:"Electronic Waste", glass:"Glass", textile:"Textiles", metal:"Metal", paper:"Paper" };
+
+function runRecycleSearch(){
+  const input = document.getElementById("recycleInput");
+  const val = input.value.trim();
+  if(!val) return;
+  let cat = "electronic";
+  for(const c of categoryMap){
+    if(c.match.some(m=>val.toLowerCase().includes(m))){ cat = c.cat; break; }
+  }
+  document.getElementById("resultTitle").textContent = val.charAt(0).toUpperCase()+val.slice(1);
+  document.getElementById("resultTag").textContent = categoryLabel[cat];
+  document.getElementById("resultCard").classList.add("show");
+  document.getElementById("resultCard").scrollIntoView({behavior:"smooth", block:"center"});
+}
+document.getElementById("recycleBtn").addEventListener("click", runRecycleSearch);
+document.getElementById("recycleInput").addEventListener("keydown", e=>{ if(e.key==="Enter") runRecycleSearch(); });
+
+/* ---------------- AI assistant demo ---------------- */
+function assistantReply(text){
+  const items = text.split(/,| and |و| y | et | und | и |和|または|,/i).map(s=>s.trim()).filter(Boolean);
+  if(items.length===0) return t("assist.seed");
+  const parts = items.slice(0,4).map(it=>{
+    let cat = "electronic";
+    for(const c of categoryMap){ if(c.match.some(m=>it.toLowerCase().includes(m))){ cat = c.cat; break; } }
+    return `"${it}" → ${categoryLabel[cat]}`;
+  });
+  return parts.join("  ·  ");
+}
+function addBubble(text, who){
+  const log = document.getElementById("chatLog");
+  const div = document.createElement("div");
+  div.className = "bubble " + who;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function sendChat(){
+  const input = document.getElementById("chatInput");
+  const val = input.value.trim();
+  if(!val) return;
+  addBubble(val, "user");
+  input.value = "";
+  setTimeout(()=> addBubble(assistantReply(val), "ai"), 350);
+}
+document.getElementById("chatSend").addEventListener("click", sendChat);
+document.getElementById("chatInput").addEventListener("keydown", e=>{ if(e.key==="Enter") sendChat(); });
+
+/* ---------------- registration modal + geolocation ---------------- */
+const overlay = document.getElementById("overlay");
+function openModal(){ overlay.classList.add("show"); }
+function closeModalFn(){ overlay.classList.remove("show"); }
+document.getElementById("openRegisterTop").addEventListener("click", openModal);
+document.getElementById("openRegisterBand").addEventListener("click", openModal);
+document.getElementById("closeModal").addEventListener("click", closeModalFn);
+overlay.addEventListener("click", e=>{ if(e.target === overlay) closeModalFn(); });
+
+let userLocation = null;
+document.getElementById("locBtn").addEventListener("click", ()=>{
+  if(!navigator.geolocation){
+    document.getElementById("locText").textContent = "Geolocation not supported by this browser.";
+    return;
+  }
+  const btn = document.getElementById("locBtn");
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    userLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+    let placeName = `${userLocation.lat.toFixed(3)}, ${userLocation.lon.toFixed(3)}`;
+    try{
+      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLocation.lat}&longitude=${userLocation.lon}&localityLanguage=en`);
+      if(res.ok){
+        const data = await res.json();
+        const city = data.city || data.locality || "";
+        const country = data.countryName || "";
+        if(city || country) placeName = [city, country].filter(Boolean).join(", ");
+      }
+    }catch(e){ /* fall back to coordinates */ }
+    const row = document.getElementById("locRow");
+    row.classList.add("got");
+    document.getElementById("locText").textContent = placeName;
+    btn.disabled = false;
+  }, err=>{
+    document.getElementById("locText").textContent = "Couldn't get your location — you can add it later.";
+    btn.disabled = false;
+  });
+});
+
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(()=> toast.classList.remove("show"), 2600);
+}
+
+document.getElementById("submitReg").addEventListener("click", ()=>{
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  if(!name || !email){
+    showToast(t("toast.needName"));
+    return;
+  }
+  closeModalFn();
+  showToast(t("toast.registered"));
+  document.getElementById("openRegisterTop").textContent = name.split(" ")[0];
+});
+
+/* ---------------- mobile nav ---------------- */
+document.getElementById("navToggle").addEventListener("click", ()=>{
+  document.getElementById("primaryNav").classList.toggle("open");
+});
+document.querySelectorAll("nav.primary a").forEach(a=>{
+  a.addEventListener("click", ()=> document.getElementById("primaryNav").classList.remove("open"));
+});
+
+/* ---------------- init ---------------- */
+initLangSwitch();
+applyTranslations();
+</script>
+</body>
+</html>
